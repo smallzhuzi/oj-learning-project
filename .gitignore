@@ -1,0 +1,135 @@
+# ======================================
+# 1. 后端 Java / Maven / Gradle
+# ======================================
+
+### 编译产物 ###
+
+target/
+build/
+.gradle/
+**/*.class
+*.jar
+*.war
+*.ear
+**/BOOT-INF/
+
+### 构建工具缓存 ###
+.mvn/
+mvnw
+mvnw.cmd
+gradlew
+gradlew.bat
+
+### 日志与临时文件 ###
+logs/
+log/
+tmp/
+temp/
+*.log
+*.pid
+
+### 本地配置文件（含敏感信息） ###
+application-local.yml
+application-local.properties
+application-dev.yml
+application-dev.properties
+config/dev/
+config/local/
+
+### 测试相关 ###
+test-output/
+test-results/
+coverage/
+
+# ======================================
+# 2. 前端 React / Node.js
+# ======================================
+
+### 依赖目录 ###
+node_modules/
+
+### 构建产物 ###
+build/
+dist/
+.next/
+out/
+
+### 环境变量（敏感信息） ###
+.env
+.env.local
+.env.*.local
+
+### 测试与覆盖率 ###
+coverage/
+.nyc_output/
+
+### 日志文件 ###
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### 缓存文件 ###
+.cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+.parcel-cache/
+
+### 框架特定目录 ###
+.next/
+out/
+.cache/
+.docusaurus/
+
+# ======================================
+# 3. 通用 / 系统 / IDE / 临时文件
+# ======================================
+
+### 操作系统 ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+
+### IDE（保留部分常用 IDE 的元数据） ###
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.settings/
+.project
+.classpath
+.vscode/
+
+### 临时文件 ###
+*.tmp
+*.temp
+*.bak
+*.cache
+
+### 敏感信息（证书/密钥等） ###
+*.pem
+*.key
+*.crt
+secrets/
+
+# ======================================
+# 4. 可选（根据项目实际情况调整）
+# ======================================
+
+*.md
+*.png
+/docs
+/tools
+.claude/
+### 如果你使用 Yarn 2+ 的 Plug'n'Play，取消下面这行注释 ###
+# .pnp.*
+### 如果你使用 Maven 包装器并希望忽略 wrapper 本身，取消下面两行注释 ###
+# .mvn/wrapper/maven-wrapper.jar
+# .mvn/wrapper/maven-wrapper.properties

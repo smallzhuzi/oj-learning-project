@@ -1,0 +1,72 @@
+# ============================================================
+# AI 智能 OJ 学习平台 - 后端配置
+# ============================================================
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/oj_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jackson:
+    # 日期格式统一
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+  # 邮件发送配置（QQ 邮箱 SMTP）
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: ${QQ_MAIL_USERNAME:2351661676@qq.com}
+    password: ${QQ_MAIL_PASSWORD:jwwljnmidbsldieg}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    # 驼峰命名自动映射（user_id → userId）
+    map-underscore-to-camel-case: true
+    # 开发阶段打印 SQL 日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 主键自增策略
+      id-type: auto
+
+# ============================================================
+# 外部服务配置（敏感信息通过环境变量注入，严禁硬编码）
+# ============================================================
+
+leetcode:
+  base-url: https://leetcode.cn
+  # 通过环境变量注入：LEETCODE_SESSION（完整的浏览器 Cookie 字符串）、LEETCODE_CSRF_TOKEN
+  # 获取方式：浏览器 F12 → Network → 任意请求 → Headers → Cookie，整段复制
+  session: ${LEETCODE_SESSION:gr_user_id=2ebbd0f9-f1e0-456e-88ec-2c8c28ed2ae3; _bl_uid=jXmyahsRts01hwppgfU1ok3qL6gm; Hm_lvt_fa218a3ff7179639febdb15e372f411c=1765791045; tfstk=glSoFV24ua85Ceh4jX-7zpkJxv4AF3tBO6np9HdUuIRXvaeW9Bfh11YF29KyxBfFG4Lp9QC0Ks51eeKPxZihC9s8FHeWVTtBY5FTXHX5FHNrOvTGqxo2ItJE40zv0zD-PMNTXlBPPI8Ng5Q8adoBdp-eUeoP3-vWCHueU6R2udJtaH-FT-v2dLDrYB-E3oJMgB-eY6W4npO2UH-FTtyDdbrKRCf56iPpZZXwdw15mLYk_t4sYDYqXURwZIoU_ivoTCWyiDoeNvp42tX8Zc6vVGCMB_Eqq1XFCw8cxjPMOiXV4wWjZWJf8_K2whzrn3I5UN8FbWgFs3fH7g8mLcW5UItD3GyK5IIDw6SkuRnMJnS9737Yl7LpqdfFV_DnY1WABgTfx5c2Oap60pjQQ2AH8guiuVJIqD94piuIRUJXnCePgJ09Icc41-2m5o8yhLZ0n-0IRUJXnCe0nVu2zK97m; _c_WBKFRo=YQ9cwInfdlVIMbsaCXuH9MEV6jrPYxC3hXpHPu5k; cf_clearance=kkmlFe2OKaOdiP0Ytzk9zuoz.oEVLxR9nZrMHYvdYtQ-1773730976-1.2.1.1-6vdG8vjIlwPmyA7W6b9bfZSOus7Pn5JfwnxG_kDU2R9RvnFzxyv6TwwAzelQwYmkgAKsgceWqBr6lKU8E.Ynjc8b_..tXPEI1S3HA1_hzXYYDE8iwidNrm7F4KCeRzy27iYw8BbXSHMGRFL.lJAQbBNsuKWd2njUdxuu90V53oAcZepOV_YWO0PJqIv52eFtbEAGgaHMswMivv65MAFfhOI2Uj2V8sKrRJ8gxP0JMHw; csrftoken=Jk1ZItSIiN4Zgg0h0oXWgLTm7vyMe9On; a2873925c34ecbd2_gr_last_sent_cs1=jovial-sinoussial7; _ga=GA1.1.1894976793.1724589451; aliyungf_tc=b693f57c073e89622cf1b3abf2c73060b4019a1b84da7ec0e47481c3b2688b1c; sl-session=8kzOXO8s2mmaTeFChc/TfA==; LEETCODE_SESSION=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfYXV0aF91c2VyX2lkIjoiNTYwODczNiIsIl9hdXRoX3VzZXJfYmFja2VuZCI6ImRqYW5nby5jb250cmliLmF1dGguYmFja2VuZHMuTW9kZWxCYWNrZW5kIiwiX2F1dGhfdXNlcl9oYXNoIjoiM2JjOWNjZjk3NjBiODY0ZTI0NTNkNGE3M2JhM2Q0NWEwN2ViMjZlMTEzYzAwZjcxMDcwMGM5ODk5NmZmYzNmNiIsImlkIjo1NjA4NzM2LCJlbWFpbCI6IiIsInVzZXJuYW1lIjoiam92aWFsLXNpbm91c3NpYWw3IiwidXNlcl9zbHVnIjoiam92aWFsLXNpbm91c3NpYWw3IiwiYXZhdGFyIjoiaHR0cHM6Ly9hc3NldHMubGVldGNvZGUuY24vYWxpeXVuLWxjLXVwbG9hZC9kZWZhdWx0X2F2YXRhci5wbmciLCJwaG9uZV92ZXJpZmllZCI6dHJ1ZSwiZGV2aWNlX2lkIjoiZWU0MjMzOTVlNjQ2ODlkY2M1MTU4N2IzNmVmZDkwZDQiLCJpcCI6IjExMi45Ni41NC4yOSIsIl90aW1lc3RhbXAiOjE3NzQxMjQxNzUuMDM0NDQ4MSwiZXhwaXJlZF90aW1lXyI6MTc3NjcxMTYwMCwidmVyc2lvbl9rZXlfIjoyLCJsYXRlc3RfdGltZXN0YW1wXyI6MTc3NDcyMTEzMX0.LW7qcUluiXE7-MGuyJ4ENxvGHX_xIktm7g1abyQYslc; Hm_lvt_f0faad39bcf8471e3ab3ef70125152c3=1775819637; Hm_lpvt_f0faad39bcf8471e3ab3ef70125152c3=1775819637; HMACCOUNT=5DB3AB81A427049D; a2873925c34ecbd2_gr_session_id=30922f2a-c641-44fd-8816-16b1801c68be; a2873925c34ecbd2_gr_last_sent_sid_with_cs1=30922f2a-c641-44fd-8816-16b1801c68be; a2873925c34ecbd2_gr_cs1=jovial-sinoussial7; a2873925c34ecbd2_gr_session_id_sent_vst=30922f2a-c641-44fd-8816-16b1801c68be; _ga_PDVPZYN3CW=GS2.1.s1775819638$o169$g0$t1775819656$j42$l0$h0}
+  csrf-token: ${LEETCODE_CSRF_TOKEN:Jk1ZItSIiN4Zgg0h0oXWgLTm7vyMe9On}
+
+luogu:
+  base-url: https://www.luogu.com.cn
+  # 通过环境变量注入洛谷 Cookie
+  # 获取方式：浏览器 F12 → Application → Cookies → www.luogu.com.cn
+  uid: ${LUOGU_UID:835859}
+  client-id: ${LUOGU_CLIENT_ID:5139815ae37a72206a82bb438c5a6efb675943df}
+
+dify:
+  base-url: ${DIFY_BASE_URL:http://localhost/v1}
+  api-key: ${DIFY_API_KEY:app-hrbQVrE9SzPcw5SLe46mMZ28}
+  smart-generate-key: ${DIFY_SMART_GENERATE_KEY:app-YFjT0Aw6Q4cXRHX8F3NtSm9e}
+  contest-analysis-key: ${DIFY_CONTEST_ANALYSIS_KEY:}
+
+# JWT 认证配置
+jwt:
+  secret: ${JWT_SECRET:oj-platform-secret-key-change-in-production}
+  expiration: 86400000
