@@ -2,17 +2,17 @@ import { useToastStore, type ToastItem } from '@/store/uiStore'
 import { CheckCircle, XCircle, Info, AlertTriangle, X } from 'lucide-react'
 
 const iconMap: Record<ToastItem['type'], React.ReactNode> = {
-  success: <CheckCircle size={16} className="text-green-400" />,
-  error: <XCircle size={16} className="text-red-400" />,
-  info: <Info size={16} className="text-blue-400" />,
-  warning: <AlertTriangle size={16} className="text-yellow-400" />,
+  success: <CheckCircle size={16} style={{ color: 'var(--success)' }} />,
+  error: <XCircle size={16} style={{ color: 'var(--danger)' }} />,
+  info: <Info size={16} style={{ color: 'var(--info)' }} />,
+  warning: <AlertTriangle size={16} style={{ color: 'var(--warning)' }} />,
 }
 
 const bgMap: Record<ToastItem['type'], string> = {
-  success: 'border-green-800/50 bg-green-950/80',
-  error: 'border-red-800/50 bg-red-950/80',
-  info: 'border-blue-800/50 bg-blue-950/80',
-  warning: 'border-yellow-800/50 bg-yellow-950/80',
+  success: 'toast-success',
+  error: 'toast-error',
+  info: 'toast-info',
+  warning: 'toast-warning',
 }
 
 export default function ToastContainer() {
@@ -26,13 +26,13 @@ export default function ToastContainer() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-lg border backdrop-blur-sm shadow-lg min-w-[280px] max-w-[420px] animate-slide-in ${bgMap[t.type]}`}
+          className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg min-w-[280px] max-w-[420px] animate-slide-in ${bgMap[t.type]}`}
         >
           {iconMap[t.type]}
-          <span className="flex-1 text-sm text-gray-200">{t.message}</span>
+          <span className="flex-1 text-sm theme-text">{t.message}</span>
           <button
             onClick={() => removeToast(t.id)}
-            className="text-gray-500 hover:text-gray-300 shrink-0"
+            className="theme-hint hover:text-[var(--text-primary)] shrink-0 transition"
           >
             <X size={14} />
           </button>

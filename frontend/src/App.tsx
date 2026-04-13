@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useUserStore } from '@/store/userStore'
+import { useThemeStore } from '@/store/uiStore'
 import ToastContainer from '@/components/ToastContainer'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import ProblemListPage from './pages/ProblemListPage'
@@ -32,6 +33,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   const token = useUserStore((s) => s.token)
   const restoreSession = useUserStore((s) => s.restoreSession)
+  const theme = useThemeStore((s) => s.theme)
   const [restoring, setRestoring] = useState(true)
 
   useEffect(() => {
@@ -42,9 +44,13 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
   if (restoring) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-400">
+      <div className="min-h-screen flex items-center justify-center theme-bg theme-faint">
         加载中...
       </div>
     )

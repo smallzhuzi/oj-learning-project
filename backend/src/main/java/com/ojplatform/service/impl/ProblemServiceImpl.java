@@ -7,16 +7,22 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ojplatform.dto.OjProblemDetail;
 import com.ojplatform.dto.ProblemQueryDTO;
+import com.ojplatform.dto.ProblemTagOptionDTO;
 import com.ojplatform.entity.Problem;
 import com.ojplatform.mapper.ProblemMapper;
+import com.ojplatform.mapper.ProblemTagRelationMapper;
 import com.ojplatform.service.OjApiService;
 import com.ojplatform.service.OjApiServiceFactory;
 import com.ojplatform.service.ProblemService;
+import com.ojplatform.service.TagSyncService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Locale;
 
 /**
  * 题目服务实现类
@@ -31,6 +37,12 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private TagSyncService tagSyncService;
+
+    @Autowired
+    private ProblemTagRelationMapper problemTagRelationMapper;
 
     @Override
     public IPage<Problem> queryProblems(ProblemQueryDTO queryDTO) {
@@ -64,6 +76,16 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
             wrapper.eq(Problem::getDifficulty, queryDTO.getDifficulty());
         }
 
+        List<String> normalizedTags = normalizeTags(queryDTO.getTags());
+        if (!normalizedTags.isEmpty()) {
+            List<Long> taggedProblemIds = problemTagRelationMapper
+                    .selectProblemIdsByPlatformAndTags(queryDTO.getOjPlatform(), normalizedTags);
+            if (taggedProblemIds.isEmpty()) {
+                return new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize(), 0);
+            }
+            wrapper.in(Problem::getId, taggedProblemIds);
+        }
+
         // 按题号数值升序
         wrapper.last("ORDER BY id ASC");
 
@@ -86,6 +108,7 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
                 if (detail != null) {
                     problem = convertDetailToProblem(detail, slug, ojPlatform);
                     baseMapper.insert(problem);
+                    tagSyncService.syncProblemTags(problem, detail.getTopicTags(), ojPlatform);
                     log.info("从 {} 远程拉取并缓存题目：{} - {}", ojPlatform, slug, detail.getTitle());
                 }
             } catch (Exception e) {
@@ -119,6 +142,9 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
                         baseMapper.updateById(problem);
                         log.info("补拉题目数据成功：{}", slug);
                     }
+                    if (detail.getTopicTags() != null && !detail.getTopicTags().isEmpty()) {
+                        tagSyncService.syncProblemTags(problem, detail.getTopicTags(), ojPlatform);
+                    }
                 }
             } catch (Exception e) {
                 log.warn("补拉题目数据失败：slug={}, 原因={}", slug, e.getMessage());
@@ -126,6 +152,36 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
         }
 
         return problem;
+    }
+
+    @Override
+    public Page<ProblemTagOptionDTO> searchTagOptions(String ojPlatform, String keyword, long pageNum, long pageSize) {
+        String platform = StringUtils.hasText(ojPlatform) ? ojPlatform.trim() : "leetcode";
+        String normalizedKeyword = StringUtils.hasText(keyword) ? keyword.trim() : null;
+        long safePageNum = pageNum <= 0 ? 1 : pageNum;
+        long safePageSize = pageSize <= 0 ? 20 : Math.min(pageSize, 50);
+        long total = problemTagRelationMapper.countTagOptions(platform, normalizedKeyword);
+        long offset = (safePageNum - 1) * safePageSize;
+
+        Page<ProblemTagOptionDTO> page = new Page<>(safePageNum, safePageSize, total);
+        if (total == 0 || offset >= total) {
+            page.setRecords(List.of());
+            return page;
+        }
+
+        page.setRecords(problemTagRelationMapper.searchTagOptions(platform, normalizedKeyword, offset, safePageSize));
+        return page;
+    }
+
+    private List<String> normalizeTags(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return List.of();
+        }
+        return tags.stream()
+                .filter(StringUtils::hasText)
+                .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
+                .distinct()
+                .toList();
     }
 
     /**

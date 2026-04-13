@@ -7,16 +7,14 @@ import { quickGenerate, getMyProblemSets, getProblemSetItems } from '@/api/probl
 import { smartGenerateStream } from '@/api/dify'
 import { toast, confirm } from '@/store/uiStore'
 import UserMenu from '@/components/UserMenu'
+import ThemeToggle from '@/components/ThemeToggle'
 import type { CreateContestParams, Problem, ProblemSet, ProblemSetItemDetail } from '@/types'
 
 /** 难度颜色 */
 const diffColor: Record<string, string> = {
-  Easy: 'text-green-400 bg-green-900/30',
-  EASY: 'text-green-400 bg-green-900/30',
-  Medium: 'text-yellow-400 bg-yellow-900/30',
-  MEDIUM: 'text-yellow-400 bg-yellow-900/30',
-  Hard: 'text-red-400 bg-red-900/30',
-  HARD: 'text-red-400 bg-red-900/30',
+  Easy: 'diff-easy', EASY: 'diff-easy',
+  Medium: 'diff-medium', MEDIUM: 'diff-medium',
+  Hard: 'diff-hard', HARD: 'diff-hard',
 }
 
 /** 已选题目项 */
@@ -342,49 +340,52 @@ export default function CreateContestPage() {
   const searchTotalPages = Math.ceil(searchTotal / 10)
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
+    <div className="min-h-screen theme-bg-gradient">
+      <header className="theme-header px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/contests')} className="text-gray-400 hover:text-white">
+          <button onClick={() => navigate('/contests')} className="theme-button-ghost">
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-lg font-semibold">{isEditMode ? '编辑比赛' : '创建比赛'}</h1>
+          <h1 className="text-lg font-semibold theme-text">{isEditMode ? '编辑比赛' : '创建比赛'}</h1>
         </div>
-        <UserMenu />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <UserMenu />
+        </div>
       </header>
 
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         {pageLoading ? (
-          <div className="flex items-center justify-center py-20 text-gray-500"><Loader2 className="animate-spin mr-2" size={18} />加载中...</div>
+          <div className="flex items-center justify-center py-20 theme-faint"><Loader2 className="animate-spin mr-2" size={18} />加载中...</div>
         ) : (
         <>
         {/* 基本信息 */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-5 space-y-4">
-          <h2 className="text-sm font-medium text-gray-300">基本信息</h2>
+        <div className="theme-card rounded-2xl p-5 space-y-4">
+          <h2 className="text-sm font-medium theme-muted">基本信息</h2>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">比赛标题 *</label>
+            <label className="block text-xs theme-faint mb-1">比赛标题 *</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" placeholder="算法周赛 #1" />
+              className="w-full theme-input rounded-lg px-3 py-2 text-sm" placeholder="算法周赛 #1" />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">比赛说明</label>
+            <label className="block text-xs theme-faint mb-1">比赛说明</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm h-20 resize-none" placeholder="规则说明、注意事项等" />
+              className="w-full theme-textarea rounded-lg px-3 py-2 text-sm h-20" placeholder="规则说明、注意事项等" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">比赛类型</label>
+              <label className="block text-xs theme-faint mb-1">比赛类型</label>
               <div className="flex gap-2">
                 {([{ key: 'individual' as const, label: '个人赛' }, { key: 'team' as const, label: '组队赛' }]).map((t) => (
                   <button key={t.key} onClick={() => setContestType(t.key)}
-                    className={`px-4 py-1.5 rounded text-sm ${contestType === t.key ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'}`}>{t.label}</button>
+                    className={`px-4 py-1.5 rounded text-sm ${contestType === t.key ? 'theme-button-blue' : 'theme-button-secondary'}`}>{t.label}</button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">计分规则</label>
+              <label className="block text-xs theme-faint mb-1">计分规则</label>
               <select value={scoringRule} onChange={(e) => setScoringRule(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm">
+                className="w-full theme-input rounded-lg px-3 py-1.5 text-sm">
                 <option value="acm">ACM 罚时制</option>
                 <option value="oi">OI 分数制</option>
                 <option value="cf">CF 风格</option>
@@ -394,112 +395,112 @@ export default function CreateContestPage() {
         </div>
 
         {/* 时间设置 */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-5 space-y-4">
-          <h2 className="text-sm font-medium text-gray-300">时间设置</h2>
+        <div className="theme-card rounded-2xl p-5 space-y-4">
+          <h2 className="text-sm font-medium theme-muted">时间设置</h2>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">开始日期 *</label>
+              <label className="block text-xs theme-faint mb-1">开始日期 *</label>
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">开始时间 *</label>
+              <label className="block text-xs theme-faint mb-1">开始时间 *</label>
               <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">时长（分钟）*</label>
+              <label className="block text-xs theme-faint mb-1">时长（分钟）*</label>
               <input type="number" value={duration} onChange={(e) => setDuration(Number(e.target.value))} min={10}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">封榜时间（结束前N分钟，0=不封榜）</label>
+              <label className="block text-xs theme-faint mb-1">封榜时间（结束前N分钟，0=不封榜）</label>
               <input type="number" value={freezeMinutes} onChange={(e) => setFreezeMinutes(Number(e.target.value))} min={0}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
             </div>
             {scoringRule === 'acm' && (
               <div>
-                <label className="block text-xs text-gray-500 mb-1">ACM 罚时（每次错误罚N分钟）</label>
+                <label className="block text-xs theme-faint mb-1">ACM 罚时（每次错误罚N分钟）</label>
                 <input type="number" value={penaltyTime} onChange={(e) => setPenaltyTime(Number(e.target.value))} min={0}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                  className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
               </div>
             )}
           </div>
         </div>
 
         {/* 参赛设置 */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-5 space-y-4">
-          <h2 className="text-sm font-medium text-gray-300">参赛设置</h2>
+        <div className="theme-card rounded-2xl p-5 space-y-4">
+          <h2 className="text-sm font-medium theme-muted">参赛设置</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">最大参赛人数（0=不限）</label>
+              <label className="block text-xs theme-faint mb-1">最大参赛人数（0=不限）</label>
               <input type="number" value={maxParticipants} onChange={(e) => setMaxParticipants(Number(e.target.value))} min={0}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
             </div>
             {contestType === 'team' && (
               <div>
-                <label className="block text-xs text-gray-500 mb-1">每队最大人数</label>
+                <label className="block text-xs theme-faint mb-1">每队最大人数</label>
                 <input type="number" value={maxTeamSize} onChange={(e) => setMaxTeamSize(Number(e.target.value))} min={2} max={10}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                  className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
               </div>
             )}
           </div>
-          <label className="flex items-center gap-2 text-sm text-gray-400">
+          <label className="flex items-center gap-2 text-sm theme-faint">
             <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}
-              className="rounded bg-gray-700 border-gray-600" />
+              className="rounded" />
             公开比赛（所有人可见可报名）
           </label>
           {!isPublic && (
             <div>
-              <label className="block text-xs text-gray-500 mb-1">比赛密码</label>
+              <label className="block text-xs theme-faint mb-1">比赛密码</label>
               <input value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" placeholder="参赛者需输入密码才能报名" />
+                className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" placeholder="参赛者需输入密码才能报名" />
             </div>
           )}
         </div>
 
         {/* 题目设置 */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-5 space-y-4">
+        <div className="theme-card rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-gray-300">
-              题目设置 <span className="text-gray-500">（已选 {selectedProblems.length} 题）</span>
+            <h2 className="text-sm font-medium theme-muted">
+              题目设置 <span className="theme-faint">（已选 {selectedProblems.length} 题）</span>
             </h2>
             <button onClick={openModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+              className="flex items-center gap-1.5 px-3 py-1.5 theme-button-blue rounded-lg">
               <Plus size={14} /> 选择题目
             </button>
           </div>
 
           {selectedProblems.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 text-sm">
+            <div className="text-center py-8 theme-faint text-sm">
               暂未选择题目，点击上方按钮选题
             </div>
           ) : (
             <div className="space-y-1">
               {selectedProblems.map((p, i) => (
-                <div key={p.slug} className="flex items-center gap-2 bg-gray-750 rounded px-3 py-2 group hover:bg-gray-700">
-                  <span className="text-gray-500 text-xs w-5">{String.fromCharCode(65 + i)}</span>
+                <div key={p.slug} className="flex items-center gap-2 theme-surface rounded-lg px-3 py-2 group theme-hover">
+                  <span className="theme-faint text-xs w-5">{String.fromCharCode(65 + i)}</span>
                   <div className="flex items-center gap-1">
                     <button onClick={() => moveProblem(i, -1)} disabled={i === 0}
-                      className="text-gray-600 hover:text-gray-400 disabled:opacity-20 text-xs">▲</button>
+                      className="theme-hint hover:text-[var(--text-secondary)] disabled:opacity-20 text-xs">▲</button>
                     <button onClick={() => moveProblem(i, 1)} disabled={i === selectedProblems.length - 1}
-                      className="text-gray-600 hover:text-gray-400 disabled:opacity-20 text-xs">▼</button>
+                      className="theme-hint hover:text-[var(--text-secondary)] disabled:opacity-20 text-xs">▼</button>
                   </div>
-                  {p.frontendId && <span className="text-gray-500 text-xs">#{p.frontendId}</span>}
+                  {p.frontendId && <span className="theme-faint text-xs">#{p.frontendId}</span>}
                   <span className="text-sm flex-1">{p.title}</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded ${diffColor[p.difficulty] || 'text-gray-400'}`}>{p.difficulty}</span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${diffColor[p.difficulty] || 'theme-tag'}`}>{p.difficulty}</span>
                   <input type="number" value={p.score} onChange={(e) => updateScore(p.slug, Number(e.target.value))}
-                    className="w-16 bg-gray-700 border border-gray-600 rounded px-2 py-0.5 text-xs text-center" min={1} />
-                  <span className="text-xs text-gray-500">分</span>
+                    className="w-16 theme-input rounded px-2 py-0.5 text-xs text-center" min={1} />
+                  <span className="text-xs theme-faint">分</span>
                   <button onClick={() => removeProblem(p.slug)}
-                    className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    className="theme-hint hover:text-[var(--danger)] opacity-0 group-hover:opacity-100 transition-opacity">
                     <Trash2 size={14} />
                   </button>
                 </div>
               ))}
-              <div className="text-xs text-gray-500 text-right pt-1">
+              <div className="text-xs theme-faint text-right pt-1">
                 总分：{selectedProblems.reduce((sum, p) => sum + p.score, 0)}
               </div>
             </div>
@@ -509,16 +510,16 @@ export default function CreateContestPage() {
         {/* 提交按钮 */}
         <div className="flex justify-end gap-3">
           <button onClick={() => navigate('/contests')}
-            className="px-5 py-2 bg-gray-700 text-gray-300 rounded-lg text-sm hover:bg-gray-600">取消</button>
+            className="px-5 py-2 theme-button-secondary rounded-xl text-sm">取消</button>
           {isEditMode && (
             <button onClick={handleSaveAndPublish} disabled={publishing || submitting}
-              className="px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 flex items-center gap-2">
+              className="px-5 py-2 theme-button-success rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2">
               {publishing && <Loader2 size={14} className="animate-spin" />}
               保存并发布
             </button>
           )}
           <button onClick={handleSubmit} disabled={submitting || publishing}
-            className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+            className="px-5 py-2 theme-button-blue rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2">
             {submitting && <Loader2 size={14} className="animate-spin" />}
             {isEditMode ? '保存草稿' : '创建比赛（草稿）'}
           </button>
@@ -529,13 +530,13 @@ export default function CreateContestPage() {
 
       {/* ========== 选题模态框 ========== */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setModalOpen(false)}>
-          <div className="bg-gray-800 rounded-xl border border-gray-700 w-[800px] max-h-[85vh] flex flex-col"
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setModalOpen(false)}>
+          <div className="theme-modal rounded-2xl w-[800px] max-h-[85vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}>
             {/* 模态框头部 */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-700">
+            <div className="flex items-center justify-between px-5 py-3 border-b theme-border">
               <h3 className="font-medium">选择比赛题目</h3>
-              <button onClick={() => setModalOpen(false)} className="text-gray-500 hover:text-white"><X size={18} /></button>
+              <button onClick={() => setModalOpen(false)} className="theme-faint hover:text-[var(--text-primary)]"><X size={18} /></button>
             </div>
 
             {/* Tab 切换 */}
@@ -548,7 +549,7 @@ export default function CreateContestPage() {
               ].map((t) => (
                 <button key={t.key} onClick={() => setModalTab(t.key)}
                   className={`flex items-center gap-1 px-3 py-1.5 rounded-t text-sm ${
-                    modalTab === t.key ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
+                    modalTab === t.key ? 'theme-chip theme-text' : 'theme-button-ghost'
                   }`}>{t.icon} {t.label}</button>
               ))}
             </div>
@@ -560,39 +561,39 @@ export default function CreateContestPage() {
                 <div className="space-y-3">
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 theme-faint" />
                       <input value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch(1)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded pl-9 pr-3 py-1.5 text-sm"
+                        className="w-full theme-input rounded-lg pl-9 pr-3 py-1.5 text-sm"
                         placeholder="搜索题号或标题..." />
                     </div>
                     <select value={searchDifficulty} onChange={(e) => { setSearchDifficulty(e.target.value); setTimeout(() => handleSearch(1), 0) }}
-                      className="bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm">
+                      className="theme-select rounded-lg px-2 py-1.5 text-sm">
                       <option value="">全部难度</option>
                       <option value="Easy">Easy</option>
                       <option value="Medium">Medium</option>
                       <option value="Hard">Hard</option>
                     </select>
                     <button onClick={() => handleSearch(1)}
-                      className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">搜索</button>
+                      className="px-3 py-1.5 theme-button-blue rounded-lg">搜索</button>
                   </div>
 
                   {searchLoading ? (
-                    <div className="flex items-center justify-center py-8 text-gray-500"><Loader2 className="animate-spin mr-2" size={16} />搜索中...</div>
+                    <div className="flex items-center justify-center py-8 theme-faint"><Loader2 className="animate-spin mr-2" size={16} />搜索中...</div>
                   ) : (
                     <div className="space-y-1">
                       {searchResults.map((p) => {
                         const isSelected = selectedProblems.some((sp) => sp.slug === p.slug)
                         return (
-                          <div key={p.id} className="flex items-center justify-between px-3 py-2 rounded hover:bg-gray-700 text-sm">
+                          <div key={p.id} className="flex items-center justify-between px-3 py-2 rounded theme-hover text-sm">
                             <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-10">{p.frontendId}</span>
+                              <span className="theme-faint w-10">{p.frontendId}</span>
                               <span>{p.title}</span>
                               <span className={`text-xs px-1.5 py-0.5 rounded ${diffColor[p.difficulty] || ''}`}>{p.difficulty}</span>
                             </div>
                             <button onClick={() => addProblem(p)} disabled={isSelected}
                               className={`px-2 py-1 rounded text-xs ${
-                                isSelected ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
+                                isSelected ? 'theme-tag cursor-not-allowed' : 'theme-status-info hover:brightness-110'
                               }`}>
                               {isSelected ? '已选' : '+ 添加'}
                             </button>
@@ -605,17 +606,17 @@ export default function CreateContestPage() {
                   {searchTotalPages > 1 && (
                     <div className="flex items-center justify-center gap-2 pt-2">
                       <button onClick={() => handleSearch(1)} disabled={searchPage <= 1}
-                        className="text-xs text-gray-400 hover:text-white disabled:opacity-30">首页</button>
+                        className="text-xs theme-faint hover:text-[var(--text-primary)] disabled:opacity-30">首页</button>
                       <button onClick={() => handleSearch(searchPage - 1)} disabled={searchPage <= 1}
-                        className="text-xs text-gray-400 hover:text-white disabled:opacity-30">&lt;</button>
+                        className="text-xs theme-faint hover:text-[var(--text-primary)] disabled:opacity-30">&lt;</button>
                       <input type="number" value={searchPage} min={1} max={searchTotalPages}
                         onChange={(e) => { const p = Number(e.target.value); if (p >= 1 && p <= searchTotalPages) handleSearch(p) }}
-                        className="w-12 bg-gray-700 border border-gray-600 rounded px-1 py-0.5 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                      <span className="text-xs text-gray-500">/ {searchTotalPages}</span>
+                        className="w-12 theme-input rounded px-1 py-0.5 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                      <span className="text-xs theme-faint">/ {searchTotalPages}</span>
                       <button onClick={() => handleSearch(searchPage + 1)} disabled={searchPage >= searchTotalPages}
-                        className="text-xs text-gray-400 hover:text-white disabled:opacity-30">&gt;</button>
+                        className="text-xs theme-faint hover:text-[var(--text-primary)] disabled:opacity-30">&gt;</button>
                       <button onClick={() => handleSearch(searchTotalPages)} disabled={searchPage >= searchTotalPages}
-                        className="text-xs text-gray-400 hover:text-white disabled:opacity-30">末页</button>
+                        className="text-xs theme-faint hover:text-[var(--text-primary)] disabled:opacity-30">末页</button>
                     </div>
                   )}
                 </div>
@@ -624,29 +625,29 @@ export default function CreateContestPage() {
               {/* ====== 快速组题 ====== */}
               {modalTab === 'quick' && (
                 <div className="space-y-4">
-                  <p className="text-xs text-gray-500">按难度分布随机抽取题目，替换当前已选题目</p>
+                  <p className="text-xs theme-faint">按难度分布随机抽取题目，替换当前已选题目</p>
                   <div className="flex gap-4">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">题目数量</label>
+                      <label className="block text-xs theme-faint mb-1">题目数量</label>
                       <div className="flex gap-1">
                         {[3, 5, 7, 10].map((n) => (
                           <button key={n} onClick={() => setQuickCount(n)}
-                            className={`px-3 py-1 rounded text-sm ${quickCount === n ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'}`}>{n}</button>
+                            className={`px-3 py-1 rounded text-sm ${quickCount === n ? 'theme-button-blue' : 'theme-button-secondary'}`}>{n}</button>
                         ))}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">难度</label>
+                      <label className="block text-xs theme-faint mb-1">难度</label>
                       <div className="flex gap-1">
                         {[{ k: 'beginner', l: '入门' }, { k: 'intermediate', l: '进阶' }, { k: 'advanced', l: '挑战' }].map((d) => (
                           <button key={d.k} onClick={() => setQuickDiff(d.k)}
-                            className={`px-3 py-1 rounded text-sm ${quickDiff === d.k ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'}`}>{d.l}</button>
+                            className={`px-3 py-1 rounded text-sm ${quickDiff === d.k ? 'theme-button-blue' : 'theme-button-secondary'}`}>{d.l}</button>
                         ))}
                       </div>
                     </div>
                   </div>
                   <button onClick={handleQuickGenerate} disabled={quickLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+                    className="px-4 py-2 theme-button-blue rounded-lg disabled:opacity-50 flex items-center gap-2">
                     {quickLoading ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
                     {quickLoading ? '组题中...' : '一键组题'}
                   </button>
@@ -656,39 +657,39 @@ export default function CreateContestPage() {
               {/* ====== AI 智能组题 ====== */}
               {modalTab === 'smart' && (
                 <div className="space-y-3">
-                  <p className="text-xs text-gray-500">AI 根据你描述的水平和目标，从知识库中智能选题</p>
+                  <p className="text-xs theme-faint">AI 根据你描述的水平和目标，从知识库中智能选题</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">题目数量</label>
+                      <label className="block text-xs theme-faint mb-1">题目数量</label>
                       <input type="number" value={smartCount} onChange={(e) => setSmartCount(Number(e.target.value))}
-                        min={1} max={20} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" />
+                        min={1} max={20} className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">偏好方向（可选）</label>
+                      <label className="block text-xs theme-faint mb-1">偏好方向（可选）</label>
                       <input value={smartPref} onChange={(e) => setSmartPref(e.target.value)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1.5 text-sm" placeholder="如：动态规划" />
+                        className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" placeholder="如：动态规划" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">参赛者水平描述 *</label>
+                    <label className="block text-xs theme-faint mb-1">参赛者水平描述 *</label>
                     <textarea value={smartSelf} onChange={(e) => setSmartSelf(e.target.value)}
-                      className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm h-14 resize-none"
+                      className="w-full theme-textarea rounded-lg px-3 py-2 text-sm h-14"
                       placeholder="如：刷了50题Easy，Medium偶尔能做出来" />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">比赛目标难度 *</label>
+                    <label className="block text-xs theme-faint mb-1">比赛目标难度 *</label>
                     <textarea value={smartGoal} onChange={(e) => setSmartGoal(e.target.value)}
-                      className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm h-14 resize-none"
+                      className="w-full theme-textarea rounded-lg px-3 py-2 text-sm h-14"
                       placeholder="如：希望比赛难度适中，有区分度" />
                   </div>
                   <button onClick={handleSmartGenerate} disabled={smartLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+                    className="px-4 py-2 theme-button-blue rounded-lg disabled:opacity-50 flex items-center gap-2">
                     {smartLoading ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
                     {smartLoading ? 'AI 组题中...' : 'AI 智能组题'}
                   </button>
                   {smartResponse && (
-                    <div className="bg-gray-900 border border-gray-700 rounded p-3 max-h-48 overflow-y-auto">
-                      <pre className="text-xs text-gray-400 whitespace-pre-wrap font-sans">{smartResponse}</pre>
+                    <div className="theme-surface rounded-lg p-3 max-h-48 overflow-y-auto">
+                      <pre className="text-xs theme-faint whitespace-pre-wrap font-sans">{smartResponse}</pre>
                     </div>
                   )}
                 </div>
@@ -697,24 +698,24 @@ export default function CreateContestPage() {
               {/* ====== 导入题单 ====== */}
               {modalTab === 'problemset' && (
                 <div className="space-y-3">
-                  <p className="text-xs text-gray-500">从已有的题单中导入题目，替换当前已选题目</p>
+                  <p className="text-xs theme-faint">从已有的题单中导入题目，替换当前已选题目</p>
                   {psLoading ? (
-                    <div className="flex items-center justify-center py-8 text-gray-500"><Loader2 className="animate-spin mr-2" size={16} />加载中...</div>
+                    <div className="flex items-center justify-center py-8 theme-faint"><Loader2 className="animate-spin mr-2" size={16} />加载中...</div>
                   ) : problemSets.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500 text-sm">暂无题单，请先在「智能组题中心」创建</div>
+                    <div className="text-center py-8 theme-faint text-sm">暂无题单，请先在「智能组题中心」创建</div>
                   ) : (
                     <div className="space-y-1">
                       {problemSets.map((ps) => (
-                        <div key={ps.id} className="flex items-center justify-between px-3 py-2.5 rounded hover:bg-gray-700">
+                        <div key={ps.id} className="flex items-center justify-between px-3 py-2.5 rounded theme-hover">
                           <div>
                             <span className="text-sm font-medium">{ps.title}</span>
-                            <span className="text-xs text-gray-500 ml-2">{ps.problemCount} 题</span>
-                            <span className="text-xs text-gray-600 ml-2">
+                            <span className="text-xs theme-faint ml-2">{ps.problemCount} 题</span>
+                            <span className="text-xs theme-hint ml-2">
                               {ps.sourceType === 'quick' ? '快速组题' : ps.sourceType === 'dify_smart' ? 'AI组题' : '手动'}
                             </span>
                           </div>
                           <button onClick={() => handleImportProblemSet(ps.id)}
-                            className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded text-xs hover:bg-blue-600/30">
+                            className="px-3 py-1 theme-status-info rounded-lg text-xs hover:brightness-110">
                             导入
                           </button>
                         </div>
@@ -726,9 +727,9 @@ export default function CreateContestPage() {
             </div>
 
             {/* 模态框底部：已选题目预览 */}
-            <div className="border-t border-gray-700 px-5 py-3">
+            <div className="border-t theme-border px-5 py-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs theme-faint">
                   已选 {selectedProblems.length} 题
                   {selectedProblems.length > 0 && (
                     <span className="ml-2">
@@ -737,7 +738,7 @@ export default function CreateContestPage() {
                   )}
                 </span>
                 <button onClick={() => setModalOpen(false)}
-                  className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                  className="px-4 py-1.5 theme-button-blue rounded-lg">
                   确认 ({selectedProblems.length} 题)
                 </button>
               </div>

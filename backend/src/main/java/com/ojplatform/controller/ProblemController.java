@@ -1,11 +1,15 @@
 package com.ojplatform.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ojplatform.common.Result;
+import com.ojplatform.dto.ProblemDTO;
 import com.ojplatform.dto.ProblemQueryDTO;
+import com.ojplatform.dto.ProblemTagOptionDTO;
 import com.ojplatform.entity.Problem;
 import com.ojplatform.service.OjApiService;
 import com.ojplatform.service.OjApiServiceFactory;
+import com.ojplatform.service.ProblemTagFacadeService;
 import com.ojplatform.service.ProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +30,9 @@ public class ProblemController {
     @Autowired
     private OjApiServiceFactory ojApiServiceFactory;
 
+    @Autowired
+    private ProblemTagFacadeService problemTagFacadeService;
+
     /**
      * 分页查询题目列表
      * 支持按关键词搜索（题号/标题）和难度筛选
@@ -33,9 +40,24 @@ public class ProblemController {
      * GET /api/problems?keyword=两数&difficulty=Easy&pageNum=1&pageSize=20
      */
     @GetMapping
-    public Result<IPage<Problem>> list(ProblemQueryDTO queryDTO) {
+    public Result<IPage<ProblemDTO>> list(ProblemQueryDTO queryDTO) {
         IPage<Problem> page = problemService.queryProblems(queryDTO);
-        return Result.ok(page);
+
+        Page<ProblemDTO> dtoPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        dtoPage.setPages(page.getPages());
+        dtoPage.setRecords(page.getRecords().stream()
+                .map(problem -> ProblemDTO.fromProblem(problem, problemTagFacadeService.getUnifiedTags(problem)))
+                .toList());
+        return Result.ok(dtoPage);
+    }
+
+    @GetMapping("/tags")
+    public Result<Page<ProblemTagOptionDTO>> searchTags(
+            @RequestParam(defaultValue = "leetcode") String ojPlatform,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") long pageNum,
+            @RequestParam(defaultValue = "20") long pageSize) {
+        return Result.ok(problemService.searchTagOptions(ojPlatform, keyword, pageNum, pageSize));
     }
 
     /**
@@ -44,14 +66,14 @@ public class ProblemController {
      * GET /api/problems/{slug}?ojPlatform=leetcode
      */
     @GetMapping("/{slug}")
-    public Result<Problem> detail(
+    public Result<ProblemDTO> detail(
             @PathVariable String slug,
             @RequestParam(defaultValue = "leetcode") String ojPlatform) {
         Problem problem = problemService.getBySlug(slug, ojPlatform);
         if (problem == null) {
             return Result.error(404, "题目不存在");
         }
-        return Result.ok(problem);
+        return Result.ok(ProblemDTO.fromProblem(problem, problemTagFacadeService.getUnifiedTags(problem)));
     }
 
     /**

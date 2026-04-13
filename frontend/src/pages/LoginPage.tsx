@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Loader2, Mail } from 'lucide-react'
 import { useUserStore } from '@/store/userStore'
 import { sendCode, resetPassword } from '@/api/email'
+import ThemeToggle from '@/components/ThemeToggle'
 
 type Tab = 'login' | 'register' | 'forgot'
 
@@ -193,7 +194,7 @@ export default function LoginPage() {
       type="button"
       onClick={handleSendCode}
       disabled={codeSending || countdown > 0}
-      className="shrink-0 px-3 py-2 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
+      className="shrink-0 px-3 py-2 text-xs theme-button-primary rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
     >
       {codeSending ? (
         <Loader2 className="w-3 h-3 animate-spin" />
@@ -205,27 +206,34 @@ export default function LoginPage() {
     </button>
   )
 
+  const inputClass = "w-full px-3 py-2 text-sm theme-input rounded-lg"
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="w-full max-w-sm p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center theme-bg-gradient">
+      {/* 右上角主题切换 */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-sm p-8 theme-panel rounded-2xl">
 
         {/* 标题 */}
-        <h1 className="text-2xl font-bold text-center text-gray-100 mb-6">程序智能在线评测系统</h1>
+        <h1 className="text-2xl font-bold text-center theme-text mb-6">程序智能在线评测系统</h1>
 
         {/* Tab 切换 */}
-        <div className="flex mb-6 bg-gray-700/50 rounded-lg p-1">
+        <div className="flex mb-6 rounded-xl p-1" style={{ background: 'var(--hover-bg)' }}>
           <button
             onClick={() => switchTab('login')}
-            className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              tab === 'login' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
+              tab === 'login' ? 'theme-button-primary' : 'theme-button-ghost'
             }`}
           >
             登录
           </button>
           <button
             onClick={() => switchTab('register')}
-            className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              tab === 'register' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
+              tab === 'register' ? 'theme-button-primary' : 'theme-button-ghost'
             }`}
           >
             注册
@@ -239,30 +247,30 @@ export default function LoginPage() {
           {tab === 'login' && (
             <>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">用户名</label>
+                <label className="block text-xs theme-faint mb-1">用户名</label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="请输入用户名"
-                  className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">密码</label>
+                <label className="block text-xs theme-faint mb-1">密码</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="请输入密码"
-                  className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
               <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => switchTab('forgot')}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 transition"
+                  className="text-xs theme-accent-text hover:brightness-110 transition"
                 >
                   忘记密码?
                 </button>
@@ -274,60 +282,60 @@ export default function LoginPage() {
           {tab === 'register' && (
             <>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">用户名</label>
+                <label className="block text-xs theme-faint mb-1">用户名</label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="请输入用户名（3-20 个字符）"
-                  className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">邮箱</label>
+                <label className="block text-xs theme-faint mb-1">邮箱</label>
                 <div className="flex gap-2">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="请输入邮箱"
-                    className="flex-1 px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    className={`${inputClass} flex-1`}
                   />
                   {codeButton}
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">验证码</label>
+                <label className="block text-xs theme-faint mb-1">验证码</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 theme-hint" />
                   <input
                     type="text"
                     value={verifyCode}
                     onChange={(e) => setVerifyCode(e.target.value)}
                     placeholder="请输入 6 位验证码"
                     maxLength={6}
-                    className="w-full pl-10 pr-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    className={`${inputClass} pl-10`}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">密码</label>
+                <label className="block text-xs theme-faint mb-1">密码</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="请输入密码（至少 6 位）"
-                  className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">确认密码</label>
+                <label className="block text-xs theme-faint mb-1">确认密码</label>
                 <input
                   type="password"
                   value={confirmPwd}
                   onChange={(e) => setConfirmPwd(e.target.value)}
                   placeholder="请再次输入密码"
-                  className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
             </>
@@ -337,57 +345,57 @@ export default function LoginPage() {
           {tab === 'forgot' && (
             <>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">注册邮箱</label>
+                <label className="block text-xs theme-faint mb-1">注册邮箱</label>
                 <div className="flex gap-2">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="请输入注册时使用的邮箱"
-                    className="flex-1 px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    className={`${inputClass} flex-1`}
                   />
                   {codeButton}
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">验证码</label>
+                <label className="block text-xs theme-faint mb-1">验证码</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 theme-hint" />
                   <input
                     type="text"
                     value={verifyCode}
                     onChange={(e) => setVerifyCode(e.target.value)}
                     placeholder="请输入 6 位验证码"
                     maxLength={6}
-                    className="w-full pl-10 pr-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                    className={`${inputClass} pl-10`}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">新密码</label>
+                <label className="block text-xs theme-faint mb-1">新密码</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="请输入新密码（至少 6 位）"
-                  className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">确认新密码</label>
+                <label className="block text-xs theme-faint mb-1">确认新密码</label>
                 <input
                   type="password"
                   value={confirmNewPwd}
                   onChange={(e) => setConfirmNewPwd(e.target.value)}
                   placeholder="请再次输入新密码"
-                  className="w-full px-3 py-2 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+                  className={inputClass}
                 />
               </div>
               <div>
                 <button
                   type="button"
                   onClick={() => switchTab('login')}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 transition"
+                  className="text-xs theme-accent-text hover:brightness-110 transition"
                 >
                   返回登录
                 </button>
@@ -395,13 +403,13 @@ export default function LoginPage() {
             </>
           )}
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {success && <p className="text-sm text-emerald-400">{success}</p>}
+          {error && <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>}
+          {success && <p className="text-sm" style={{ color: 'var(--success)' }}>{success}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+            className="w-full py-2.5 theme-button-primary text-sm font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {tab === 'login' ? '登录' : tab === 'register' ? '注册' : '重置密码'}

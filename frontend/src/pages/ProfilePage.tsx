@@ -9,22 +9,11 @@ import { updateProfile, changePassword, getOjConfigs, saveOjConfig } from '@/api
 import { getUserStats } from '@/api/submission'
 import { getUserProfile, updateUserProfile, analyzeUserProfile } from '@/api/userProfile'
 import { sendCode } from '@/api/email'
+import ThemeToggle from '@/components/ThemeToggle'
 import type { UserOjConfig, UserStats, UserProfile } from '@/types'
 
 type OjTab = 'leetcode' | 'luogu'
 type PageTab = 'overview' | 'settings'
-
-/** LeetCode 难度颜色 */
-const lcDiffColors: Record<string, string> = {
-  Easy: 'bg-green-500', Medium: 'bg-yellow-500', Hard: 'bg-red-500',
-}
-/** 洛谷难度颜色 */
-const lgDiffColors: Record<string, string> = {
-  '入门': 'bg-red-400', '普及-': 'bg-orange-400', '普及/提高-': 'bg-yellow-400',
-  '普及+/提高': 'bg-green-400', '提高+/省选-': 'bg-blue-400',
-  '省选/NOI-': 'bg-purple-400', 'NOI/NOI+/CTSC': 'bg-gray-300',
-  '暂无评定': 'bg-gray-600',
-}
 
 const skillLabels: Record<string, string> = {
   beginner: '入门', intermediate: '进阶', advanced: '高级', expert: '专家',
@@ -148,7 +137,6 @@ export default function ProfilePage() {
             setLcCookie(c.cookieValue || '')
             setLcCsrf(c.csrfToken || '')
           } else if (c.ojPlatform === 'luogu') {
-            // 从 cookie 字符串中解析 _uid 和 __client_id
             const cookie = c.cookieValue || ''
             const uidMatch = cookie.match(/_uid=([^;]+)/)
             const cidMatch = cookie.match(/__client_id=([^;]+)/)
@@ -223,62 +211,65 @@ export default function ProfilePage() {
   }
 
   const initials = user?.username?.slice(0, 1).toUpperCase() || '?'
-  const inputClass = "w-full px-3 py-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition"
-  const labelClass = "block text-xs font-medium text-gray-400 mb-1.5"
+  const inputClass = "w-full px-3 py-2.5 text-sm theme-input rounded-lg transition"
+  const labelClass = "block text-xs font-medium theme-faint mb-1.5"
 
   // 计算近 30 天趋势图最大值
   const maxDaily = stats?.recentDaily?.reduce((m, d) => Math.max(m, d.count), 0) || 1
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="min-h-screen theme-bg-gradient">
       <div className="max-w-3xl mx-auto px-6 py-8">
 
         {/* 顶部导航 */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition"
+            className="flex items-center gap-2 text-sm theme-button-ghost transition"
           >
             <ArrowLeft className="w-4 h-4" />
             返回题库
           </button>
-          <div className="flex bg-gray-800 rounded-lg p-0.5 border border-gray-700">
-            <button
-              onClick={() => setPageTab('overview')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-md transition ${
-                pageTab === 'overview' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              数据概览
-            </button>
-            <button
-              onClick={() => setPageTab('settings')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-md transition ${
-                pageTab === 'settings' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              账号设置
-            </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <div className="flex theme-card-solid rounded-xl p-0.5">
+              <button
+                onClick={() => setPageTab('overview')}
+                className={`px-4 py-1.5 text-xs font-medium rounded-lg transition ${
+                  pageTab === 'overview' ? 'theme-button-primary' : 'theme-button-ghost'
+                }`}
+              >
+                数据概览
+              </button>
+              <button
+                onClick={() => setPageTab('settings')}
+                className={`px-4 py-1.5 text-xs font-medium rounded-lg transition ${
+                  pageTab === 'settings' ? 'theme-button-primary' : 'theme-button-ghost'
+                }`}
+              >
+                账号设置
+              </button>
+            </div>
           </div>
         </div>
 
         {/* 用户卡片（始终显示） */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-6">
+        <div className="theme-card rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold text-white shrink-0">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-strong)] flex items-center justify-center text-xl font-bold text-white shrink-0">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold text-gray-100 truncate">{user?.username}</h1>
-              <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+              <h1 className="text-lg font-semibold theme-text truncate">{user?.username}</h1>
+              <p className="text-sm theme-faint truncate">{user?.email}</p>
               <div className="flex items-center gap-2 mt-1.5">
                 <span className={`px-2 py-0.5 text-[11px] font-medium rounded-full ${
-                  user?.role === 'admin' ? 'bg-purple-900/40 text-purple-300' : 'bg-indigo-900/40 text-indigo-300'
+                  user?.role === 'admin' ? 'bg-purple-500/15 text-purple-400' : 'bg-[var(--accent-soft)] theme-accent-text'
                 }`}>
                   {user?.role === 'admin' ? '管理员' : '普通用户'}
                 </span>
                 {profile && (
-                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-gray-700 text-gray-300">
+                  <span className="px-2 py-0.5 text-[11px] font-medium rounded-full theme-tag">
                     {skillLabels[profile.skillLevel] || profile.skillLevel}
                   </span>
                 )}
@@ -286,7 +277,7 @@ export default function ProfilePage() {
             </div>
             <button
               onClick={() => { logout(); navigate('/login') }}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 border border-gray-600 rounded-lg hover:text-red-400 hover:border-red-800 hover:bg-red-900/20 transition shrink-0"
+              className="flex items-center gap-2 px-4 py-2 text-sm theme-button-secondary rounded-xl hover:text-[var(--danger)] hover:border-[var(--danger)] transition shrink-0"
             >
               <LogOut className="w-4 h-4" />
               退出
@@ -298,7 +289,7 @@ export default function ProfilePage() {
           <>
             {/* ===== 做题统计 ===== */}
             {statsLoading ? (
-              <div className="flex items-center justify-center py-16 text-gray-500">
+              <div className="flex items-center justify-center py-16 theme-faint">
                 <Loader2 className="w-5 h-5 animate-spin mr-2" /> 加载统计数据...
               </div>
             ) : stats ? (
@@ -306,40 +297,40 @@ export default function ProfilePage() {
                 {/* 总计三指标 */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   {[
-                    { label: '解题总数', value: stats.total.solved, color: 'text-emerald-400' },
-                    { label: '提交总数', value: stats.total.submitted, color: 'text-blue-400' },
-                    { label: '通过率', value: `${stats.total.acceptanceRate}%`, color: 'text-amber-400' },
+                    { label: '解题总数', value: stats.total.solved, color: 'var(--success)' },
+                    { label: '提交总数', value: stats.total.submitted, color: 'var(--info)' },
+                    { label: '通过率', value: `${stats.total.acceptanceRate}%`, color: 'var(--warning)' },
                   ].map((item) => (
-                    <div key={item.label} className="bg-gray-800 rounded-xl border border-gray-700 p-5 text-center">
-                      <div className={`text-2xl font-bold ${item.color}`}>{item.value}</div>
-                      <div className="text-xs text-gray-500 mt-1">{item.label}</div>
+                    <div key={item.label} className="theme-card rounded-2xl p-5 text-center">
+                      <div className="text-2xl font-bold" style={{ color: item.color }}>{item.value}</div>
+                      <div className="text-xs theme-faint mt-1">{item.label}</div>
                     </div>
                   ))}
                 </div>
 
                 {/* 按平台统计 */}
-                <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-6">
+                <section className="theme-card rounded-2xl p-6 mb-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="w-4 h-4 text-indigo-400" />
-                    <h2 className="text-sm font-semibold text-gray-200">平台做题统计</h2>
+                    <BarChart3 className="w-4 h-4 theme-accent-text" />
+                    <h2 className="text-sm font-semibold theme-text">平台做题统计</h2>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {Object.entries(stats.platforms).map(([platform, s]) => (
-                      <div key={platform} className="bg-gray-700/40 rounded-lg p-4">
+                      <div key={platform} className="theme-surface rounded-xl p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-gray-200">
+                          <span className="text-sm font-medium theme-text">
                             {platform === 'leetcode' ? 'LeetCode' : '洛谷'}
                           </span>
-                          <span className="text-xs text-gray-500">通过率 {s.acceptanceRate}%</span>
+                          <span className="text-xs theme-faint">通过率 {s.acceptanceRate}%</span>
                         </div>
                         <div className="flex items-baseline gap-3">
                           <div>
-                            <span className="text-xl font-bold text-emerald-400">{s.solved}</span>
-                            <span className="text-xs text-gray-500 ml-1">题通过</span>
+                            <span className="text-xl font-bold" style={{ color: 'var(--success)' }}>{s.solved}</span>
+                            <span className="text-xs theme-faint ml-1">题通过</span>
                           </div>
                           <div>
-                            <span className="text-lg font-semibold text-gray-400">{s.submitted}</span>
-                            <span className="text-xs text-gray-500 ml-1">次提交</span>
+                            <span className="text-lg font-semibold theme-muted">{s.submitted}</span>
+                            <span className="text-xs theme-faint ml-1">次提交</span>
                           </div>
                         </div>
 
@@ -347,19 +338,21 @@ export default function ProfilePage() {
                         {stats.difficulties[platform] && (
                           <div className="mt-3 space-y-1.5">
                             {Object.entries(stats.difficulties[platform]).map(([diff, count]) => {
-                              const colors = platform === 'leetcode' ? lcDiffColors : lgDiffColors
                               const total = Object.values(stats.difficulties[platform]).reduce((a, b) => a + b, 0)
                               const pct = total > 0 ? (count / total * 100) : 0
+                              const barColor = diff === 'Easy' || diff === '入门' || diff === '普及-' ? 'var(--success)'
+                                : diff === 'Hard' || diff === '省选/NOI-' || diff === 'NOI/NOI+/CTSC' ? 'var(--danger)'
+                                : 'var(--warning)'
                               return (
                                 <div key={diff} className="flex items-center gap-2 text-xs">
-                                  <span className="w-20 text-gray-400 truncate">{diff}</span>
-                                  <div className="flex-1 h-2 bg-gray-600 rounded-full overflow-hidden">
+                                  <span className="w-20 theme-faint truncate">{diff}</span>
+                                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'var(--hover-bg)' }}>
                                     <div
-                                      className={`h-full rounded-full ${colors[diff] || 'bg-gray-500'}`}
-                                      style={{ width: `${Math.max(pct, 2)}%` }}
+                                      className="h-full rounded-full transition-all"
+                                      style={{ width: `${Math.max(pct, 2)}%`, background: barColor }}
                                     />
                                   </div>
-                                  <span className="w-6 text-right text-gray-400">{count}</span>
+                                  <span className="w-6 text-right theme-faint">{count}</span>
                                 </div>
                               )
                             })}
@@ -368,7 +361,7 @@ export default function ProfilePage() {
                       </div>
                     ))}
                     {Object.keys(stats.platforms).length === 0 && (
-                      <div className="col-span-2 text-center py-8 text-gray-500 text-sm">
+                      <div className="col-span-2 text-center py-8 theme-faint text-sm">
                         暂无提交记录，去题库开始做题吧
                       </div>
                     )}
@@ -377,26 +370,29 @@ export default function ProfilePage() {
 
                 {/* 近 30 天提交趋势 */}
                 {stats.recentDaily.length > 0 && (
-                  <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-6">
+                  <section className="theme-card rounded-2xl p-6 mb-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <TrendingUp className="w-4 h-4 text-indigo-400" />
-                      <h2 className="text-sm font-semibold text-gray-200">近 30 天提交趋势</h2>
+                      <TrendingUp className="w-4 h-4 theme-accent-text" />
+                      <h2 className="text-sm font-semibold theme-text">近 30 天提交趋势</h2>
                     </div>
                     <div className="flex items-end gap-[3px] h-24">
                       {stats.recentDaily.map((d) => (
                         <div
                           key={d.date}
-                          className="flex-1 bg-indigo-500/70 rounded-t hover:bg-indigo-400 transition-colors cursor-default group relative"
-                          style={{ height: `${Math.max((d.count / maxDaily) * 100, 4)}%` }}
+                          className="flex-1 rounded-t cursor-default group relative transition-colors"
+                          style={{
+                            height: `${Math.max((d.count / maxDaily) * 100, 4)}%`,
+                            background: `color-mix(in srgb, var(--accent) 65%, transparent)`,
+                          }}
                           title={`${d.date}：${d.count} 次提交`}
                         >
-                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block text-[10px] text-gray-300 bg-gray-700 px-1.5 py-0.5 rounded whitespace-nowrap">
+                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block text-[10px] theme-text rounded px-1.5 py-0.5 whitespace-nowrap" style={{ background: 'var(--card-bg-solid)' }}>
                             {d.date.slice(5)} · {d.count}次
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-between mt-1.5 text-[10px] text-gray-600">
+                    <div className="flex justify-between mt-1.5 text-[10px] theme-hint">
                       <span>{stats.recentDaily[0]?.date.slice(5)}</span>
                       <span>{stats.recentDaily[stats.recentDaily.length - 1]?.date.slice(5)}</span>
                     </div>
@@ -404,20 +400,20 @@ export default function ProfilePage() {
                 )}
               </>
             ) : (
-              <div className="text-center py-16 text-gray-500 text-sm">无法加载统计数据</div>
+              <div className="text-center py-16 theme-faint text-sm">无法加载统计数据</div>
             )}
 
             {/* ===== 能力画像 ===== */}
-            <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-6">
+            <section className="theme-card rounded-2xl p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-indigo-400" />
-                  <h2 className="text-sm font-semibold text-gray-200">能力画像</h2>
+                  <Target className="w-4 h-4 theme-accent-text" />
+                  <h2 className="text-sm font-semibold theme-text">能力画像</h2>
                 </div>
                 <button
                   onClick={handleAnalyzeProfile}
                   disabled={profileAnalyzing}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-indigo-400 border border-indigo-800 rounded-lg hover:bg-indigo-900/30 disabled:opacity-50 transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs theme-button-secondary rounded-xl disabled:opacity-50 transition"
                 >
                   {profileAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                   刷新分析
@@ -427,11 +423,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className={labelClass}>自评水平</label>
-                  <select
-                    value={skillLevel}
-                    onChange={(e) => setSkillLevel(e.target.value)}
-                    className={inputClass}
-                  >
+                  <select value={skillLevel} onChange={(e) => setSkillLevel(e.target.value)} className={inputClass}>
                     <option value="beginner">入门</option>
                     <option value="intermediate">进阶</option>
                     <option value="advanced">高级</option>
@@ -440,11 +432,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className={labelClass}>目标水平</label>
-                  <select
-                    value={targetLevel}
-                    onChange={(e) => setTargetLevel(e.target.value)}
-                    className={inputClass}
-                  >
+                  <select value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} className={inputClass}>
                     <option value="">未设置</option>
                     <option value="beginner">入门</option>
                     <option value="intermediate">进阶</option>
@@ -461,12 +449,10 @@ export default function ProfilePage() {
                     <div className="flex flex-wrap gap-1.5">
                       {profile.strongTags && profile.strongTags.length > 0 ? (
                         profile.strongTags.map((t) => (
-                          <span key={t} className="px-2 py-0.5 text-[11px] bg-emerald-900/40 text-emerald-400 rounded-full">
-                            {t}
-                          </span>
+                          <span key={t} className="px-2 py-0.5 text-[11px] theme-status-accepted rounded-full">{t}</span>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-600">暂未分析</span>
+                        <span className="text-xs theme-hint">暂未分析</span>
                       )}
                     </div>
                   </div>
@@ -475,12 +461,10 @@ export default function ProfilePage() {
                     <div className="flex flex-wrap gap-1.5">
                       {profile.weakTags && profile.weakTags.length > 0 ? (
                         profile.weakTags.map((t) => (
-                          <span key={t} className="px-2 py-0.5 text-[11px] bg-red-900/40 text-red-400 rounded-full">
-                            {t}
-                          </span>
+                          <span key={t} className="px-2 py-0.5 text-[11px] theme-status-error rounded-full">{t}</span>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-600">暂未分析</span>
+                        <span className="text-xs theme-hint">暂未分析</span>
                       )}
                     </div>
                   </div>
@@ -488,7 +472,7 @@ export default function ProfilePage() {
               )}
 
               {profileMsg2 && (
-                <p className={`text-xs mb-3 ${profileMsg2.includes('成功') || profileMsg2.includes('完成') ? 'text-emerald-400' : 'text-red-400'}`}>
+                <p className={`text-xs mb-3 ${profileMsg2.includes('成功') || profileMsg2.includes('完成') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>
                   {profileMsg2}
                 </p>
               )}
@@ -496,7 +480,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSaveProfile2}
                   disabled={profileSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-sm text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
+                  className="flex items-center gap-2 px-4 py-2 theme-button-primary text-sm rounded-xl disabled:opacity-50 transition"
                 >
                   {profileSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                   保存画像
@@ -509,38 +493,38 @@ export default function ProfilePage() {
             {/* ===== 账号设置 Tab ===== */}
 
             {/* 个人信息 */}
-            <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-6">
+            <section className="theme-card rounded-2xl p-6 mb-6">
               <div className="flex items-center gap-2 mb-5">
-                <Mail className="w-4 h-4 text-indigo-400" />
-                <h2 className="text-sm font-semibold text-gray-200">个人信息</h2>
+                <Mail className="w-4 h-4 theme-accent-text" />
+                <h2 className="text-sm font-semibold theme-text">个人信息</h2>
               </div>
               <div className="space-y-4">
                 <div>
                   <label className={labelClass}>用户名</label>
-                  <input type="text" value={username} disabled className={`${inputClass} !bg-gray-700/50 opacity-60 cursor-not-allowed`} />
-                  <p className="text-[11px] text-gray-600 mt-1">用户名注册后不可修改</p>
+                  <input type="text" value={username} disabled className={`${inputClass} opacity-60 cursor-not-allowed`} />
+                  <p className="text-[11px] theme-hint mt-1">用户名注册后不可修改</p>
                 </div>
                 <div>
                   <label className={labelClass}>邮箱</label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
                 </div>
                 {emailChanged && (
-                  <div className="bg-gray-700/30 rounded-lg p-3 border border-gray-600/50">
+                  <div className="theme-surface rounded-xl p-3">
                     <label className={labelClass}>验证码（发送到新邮箱）</label>
                     <div className="flex gap-2">
                       <input type="text" value={emailCode} onChange={(e) => setEmailCode(e.target.value)} placeholder="请输入 6 位验证码" maxLength={6} className={`${inputClass} flex-1`} />
                       <button onClick={handleSendCode} disabled={codeCooldown > 0 || codeSending}
-                        className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition whitespace-nowrap flex items-center gap-1.5">
+                        className="px-4 py-2 text-sm theme-button-primary rounded-xl disabled:opacity-50 transition whitespace-nowrap flex items-center gap-1.5">
                         {codeSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                         {codeCooldown > 0 ? `${codeCooldown}s` : '发送验证码'}
                       </button>
                     </div>
                   </div>
                 )}
-                {profileMsg && <p className={`text-xs ${profileMsg.includes('成功') ? 'text-emerald-400' : 'text-red-400'}`}>{profileMsg}</p>}
+                {profileMsg && <p className={`text-xs ${profileMsg.includes('成功') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>{profileMsg}</p>}
                 <div className="flex justify-end">
                   <button onClick={handleSaveProfile} disabled={profileLoading}
-                    className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-sm text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition">
+                    className="flex items-center gap-2 px-5 py-2 theme-button-primary text-sm rounded-xl disabled:opacity-50 transition">
                     {profileLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                     保存信息
                   </button>
@@ -549,17 +533,17 @@ export default function ProfilePage() {
             </section>
 
             {/* 修改密码 */}
-            <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-6">
+            <section className="theme-card rounded-2xl p-6 mb-6">
               <div className="flex items-center gap-2 mb-5">
-                <Lock className="w-4 h-4 text-indigo-400" />
-                <h2 className="text-sm font-semibold text-gray-200">修改密码</h2>
+                <Lock className="w-4 h-4 theme-accent-text" />
+                <h2 className="text-sm font-semibold theme-text">修改密码</h2>
               </div>
               <div className="space-y-4">
                 <div>
                   <label className={labelClass}>当前密码</label>
                   <div className="relative">
                     <input type={showOldPwd ? 'text' : 'password'} value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} placeholder="请输入当前密码" className={inputClass} />
-                    <button type="button" onClick={() => setShowOldPwd(!showOldPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition">
+                    <button type="button" onClick={() => setShowOldPwd(!showOldPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-hint hover:text-[var(--text-primary)] transition">
                       {showOldPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
@@ -574,10 +558,10 @@ export default function ProfilePage() {
                     <input type="password" value={confirmNewPwd} onChange={(e) => setConfirmNewPwd(e.target.value)} placeholder="再次输入新密码" className={inputClass} />
                   </div>
                 </div>
-                {pwdMsg && <p className={`text-xs ${pwdMsg.includes('成功') ? 'text-emerald-400' : 'text-red-400'}`}>{pwdMsg}</p>}
+                {pwdMsg && <p className={`text-xs ${pwdMsg.includes('成功') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>{pwdMsg}</p>}
                 <div className="flex justify-end">
                   <button onClick={handleChangePassword} disabled={pwdLoading}
-                    className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-sm text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition">
+                    className="flex items-center gap-2 px-5 py-2 theme-button-primary text-sm rounded-xl disabled:opacity-50 transition">
                     {pwdLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Lock className="w-3.5 h-3.5" />}
                     修改密码
                   </button>
@@ -586,20 +570,20 @@ export default function ProfilePage() {
             </section>
 
             {/* OJ 平台配置 */}
-            <section className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+            <section className="theme-card rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-1">
-                <Settings className="w-4 h-4 text-indigo-400" />
-                <h2 className="text-sm font-semibold text-gray-200">OJ 平台配置</h2>
+                <Settings className="w-4 h-4 theme-accent-text" />
+                <h2 className="text-sm font-semibold theme-text">OJ 平台配置</h2>
               </div>
-              <p className="text-xs text-gray-500 mb-5 ml-6">配置个人 OJ 凭证后，提交代码将使用你的账号。未配置时使用平台公共账号。</p>
+              <p className="text-xs theme-faint mb-5 ml-6">配置个人 OJ 凭证后，提交代码将使用你的账号。未配置时使用平台公共账号。</p>
 
-              <div className="flex mb-5 bg-gray-700/40 rounded-lg p-1">
+              <div className="flex mb-5 rounded-xl p-1" style={{ background: 'var(--hover-bg)' }}>
                 <button onClick={() => { setOjTab('leetcode'); setOjMsg('') }}
-                  className={`flex-1 py-2 text-xs font-medium rounded-md transition ${ojTab === 'leetcode' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>
+                  className={`flex-1 py-2 text-xs font-medium rounded-lg transition ${ojTab === 'leetcode' ? 'theme-button-primary' : 'theme-button-ghost'}`}>
                   LeetCode
                 </button>
                 <button onClick={() => { setOjTab('luogu'); setOjMsg('') }}
-                  className={`flex-1 py-2 text-xs font-medium rounded-md transition ${ojTab === 'luogu' ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>
+                  className={`flex-1 py-2 text-xs font-medium rounded-lg transition ${ojTab === 'luogu' ? 'theme-button-primary' : 'theme-button-ghost'}`}>
                   洛谷
                 </button>
               </div>
@@ -635,10 +619,10 @@ export default function ProfilePage() {
                   </>
                 )}
 
-                {ojMsg && <p className={`text-xs ${ojMsg.includes('成功') ? 'text-emerald-400' : 'text-red-400'}`}>{ojMsg}</p>}
+                {ojMsg && <p className={`text-xs ${ojMsg.includes('成功') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>{ojMsg}</p>}
                 <div className="flex justify-end">
                   <button onClick={handleSaveOjConfig} disabled={ojLoading}
-                    className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-sm text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition">
+                    className="flex items-center gap-2 px-5 py-2 theme-button-primary text-sm rounded-xl disabled:opacity-50 transition">
                     {ojLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                     保存配置
                   </button>

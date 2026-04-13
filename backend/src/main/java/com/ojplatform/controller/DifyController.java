@@ -408,7 +408,13 @@ public class DifyController {
      */
     private ProblemSet createProblemSetFromSlugs(Long userId, SmartGenerateDTO req, List<String> slugs) {
         String platform = req.getOjPlatform() != null ? req.getOjPlatform() : "leetcode";
-        String title = req.getTitle() != null ? req.getTitle() : "AI 智能组题 (" + slugs.size() + "题)";
+        String title = req.getTitle();
+        if (title != null) {
+            title = title.trim();
+        }
+        if (title == null || title.isBlank()) {
+            title = "AI 智能组题 (" + slugs.size() + "题)";
+        }
 
         ProblemSet ps = new ProblemSet();
         ps.setUserId(userId);

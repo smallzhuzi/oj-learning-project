@@ -1,4 +1,22 @@
 /** 题目实体 */
+export interface ProblemTag {
+  id?: number
+  name: string
+  slug: string
+  key?: string
+  label?: string
+  type?: string
+  sourceName?: string
+  sourceSlug?: string
+  ojPlatform?: string
+}
+
+export interface ProblemTagOption {
+  key: string
+  label: string
+  type?: string
+}
+
 export interface Problem {
   id: number
   slug: string
@@ -8,7 +26,7 @@ export interface Problem {
   ojPlatform: string
   contentMarkdown: string | null
   codeSnippets: CodeSnippet[] | null
-  topicTags: { name: string; slug: string }[] | null
+  topicTags: ProblemTag[] | null
   frontendId: string | null
   questionId: string | null
   createdAt: string
@@ -104,6 +122,7 @@ export interface PageResult<T> {
   pages: number
 }
 
+
 /** 提交代码请求参数 */
 export interface SubmitCodeParams {
   problemSlug: string
@@ -125,6 +144,7 @@ export interface CreateSessionParams {
 export interface ProblemQueryParams {
   keyword?: string
   difficulty?: string
+  tags?: string[]
   ojPlatform?: string
   pageNum?: number
   pageSize?: number

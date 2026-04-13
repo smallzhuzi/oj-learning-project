@@ -4,45 +4,53 @@ import java.util.List;
 
 /**
  * LeetCode 题目详情 DTO
- * 对应 GraphQL questionData 查询的返回结果
  */
 public class LeetCodeProblemDetail {
 
-    /** LeetCode 内部题目 ID（提交代码时必需） */
+    /** LeetCode 内部题目 ID */
     private String questionId;
 
-    /** 前端展示的题号（如 "1"） */
+    /** 前端展示题号 */
     private String questionFrontendId;
 
-    /** 题目英文标题 */
+    /** 英文标题 */
     private String title;
 
-    /** 题目中文标题 */
+    /** 中文标题 */
     private String translatedTitle;
 
-    /** 题目中文描述（HTML 格式） */
+    /** 中文题面 HTML */
     private String translatedContent;
 
-    /** 难度等级（Easy / Medium / Hard） */
+    /** 难度 */
     private String difficulty;
 
-    /** 统计信息 JSON 字符串（包含 acRate 等） */
+    /** 统计信息 JSON */
     private String stats;
 
-    /** 各语言的初始代码模板 */
+    /** 各语言初始代码 */
     private List<CodeSnippet> codeSnippets;
 
     /** 题目标签列表 */
     private List<TopicTag> topicTags;
 
-    /**
-     * 题目标签内部类
-     */
     public static class TopicTag {
-        /** 标签名称（如 "数组"） */
+        /** 平台原始标签 ID */
+        private String id;
+        /** 标签显示名 */
         private String name;
-        /** 标签 slug（如 "array"） */
+        /** 标签 slug */
         private String slug;
+        /** 平台原始标签类型，例如洛谷的 1..6 */
+        private Integer type;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
 
         public String getName() {
             return name;
@@ -59,15 +67,20 @@ public class LeetCodeProblemDetail {
         public void setSlug(String slug) {
             this.slug = slug;
         }
+
+        public Integer getType() {
+            return type;
+        }
+
+        public void setType(Integer type) {
+            this.type = type;
+        }
     }
 
-    /**
-     * 代码模板内部类
-     */
     public static class CodeSnippet {
-        /** 语言显示名（如 "Java"） */
+        /** 语言显示名 */
         private String lang;
-        /** 语言 slug（如 "java"），提交时使用 */
+        /** 语言 slug */
         private String langSlug;
         /** 初始代码模板 */
         private String code;
@@ -96,8 +109,6 @@ public class LeetCodeProblemDetail {
             this.code = code;
         }
     }
-
-    // ==================== Getter / Setter ====================
 
     public String getQuestionId() {
         return questionId;

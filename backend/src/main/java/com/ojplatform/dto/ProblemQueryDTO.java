@@ -1,6 +1,6 @@
 package com.ojplatform.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 
 /**
  * 题目搜索请求 DTO
@@ -18,6 +18,8 @@ public class ProblemQueryDTO {
     private String ojPlatform = "leetcode";
 
     /** 当前页码（从 1 开始） */
+    private List<String> tags;
+
     private Integer pageNum = 1;
 
     /** 每页条数（默认 20） */
@@ -47,6 +49,14 @@ public class ProblemQueryDTO {
 
     public void setOjPlatform(String ojPlatform) {
         this.ojPlatform = ojPlatform;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 
     public Integer getPageNum() {

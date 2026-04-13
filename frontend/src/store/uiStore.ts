@@ -14,6 +14,13 @@ interface ToastStore {
   removeToast: (id: string) => void
 }
 
+export type ThemeMode = 'dark' | 'light'
+
+interface ThemeStore {
+  theme: ThemeMode
+  setTheme: (theme: ThemeMode) => void
+}
+
 export const useToastStore = create<ToastStore>((set) => ({
   toasts: [],
   addToast: (type, message, duration = 3000) => {
@@ -71,3 +78,26 @@ export const useConfirmStore = create<ConfirmStore>((set, get) => ({
 /** 便捷方法：await confirm('确定？') */
 export const confirm = (message: string, options?: Partial<ConfirmOptions>) =>
   useConfirmStore.getState().showConfirm({ message, ...options })
+
+const THEME_STORAGE_KEY = 'oj-theme'
+
+const getInitialTheme = (): ThemeMode => {
+  if (typeof window === 'undefined') {
+    return 'dark'
+  }
+  const saved = window.localStorage.getItem(THEME_STORAGE_KEY)
+  if (saved === 'dark' || saved === 'light') {
+    return saved
+  }
+  return 'dark'
+}
+
+export const useThemeStore = create<ThemeStore>((set) => ({
+  theme: getInitialTheme(),
+  setTheme: (theme) => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+    }
+    set({ theme })
+  },
+}))

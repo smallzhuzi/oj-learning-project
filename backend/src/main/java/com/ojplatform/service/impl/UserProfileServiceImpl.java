@@ -2,11 +2,13 @@ package com.ojplatform.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ojplatform.dto.ProblemTagDTO;
 import com.ojplatform.dto.UpdateUserProfileDTO;
 import com.ojplatform.entity.Problem;
 import com.ojplatform.entity.Submission;
 import com.ojplatform.entity.UserProfile;
 import com.ojplatform.mapper.UserProfileMapper;
+import com.ojplatform.service.ProblemTagFacadeService;
 import com.ojplatform.service.ProblemService;
 import com.ojplatform.service.SubmissionService;
 import com.ojplatform.service.UserProfileService;
@@ -39,6 +41,9 @@ public class UserProfileServiceImpl extends ServiceImpl<UserProfileMapper, UserP
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ProblemTagFacadeService problemTagFacadeService;
 
     @Override
     public UserProfile getOrCreateProfile(Long userId) {
@@ -133,19 +138,21 @@ public class UserProfileServiceImpl extends ServiceImpl<UserProfileMapper, UserP
             }
 
             // 统计标签分布（用于擅长/薄弱分析）
-            if (problem.getTopicTags() != null) {
-                try {
-                    List<Map<String, String>> tags = objectMapper.readValue(
-                            problem.getTopicTags(),
-                            objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class)
-                    );
-                    for (Map<String, String> tag : tags) {
-                        String tagSlug = tag.getOrDefault("slug", tag.getOrDefault("name", "unknown"));
-                        tagTotalCount.merge(tagSlug, 1, Integer::sum);
-                        if (isAc) tagAcCount.merge(tagSlug, 1, Integer::sum);
+            List<ProblemTagDTO> unifiedTags = problemTagFacadeService.getUnifiedTags(problem);
+            if (unifiedTags != null && !unifiedTags.isEmpty()) {
+                for (ProblemTagDTO tag : unifiedTags) {
+                    // 画像统计优先使用展示名，避免洛谷数字标签直接暴露到前端
+                    String tagLabel = tag.getLabel();
+                    if (tagLabel == null || tagLabel.isBlank()) {
+                        tagLabel = tag.getName();
                     }
-                } catch (Exception e) {
-                    // 解析标签失败，忽略
+                    if (tagLabel == null || tagLabel.isBlank()) {
+                        continue;
+                    }
+                    tagTotalCount.merge(tagLabel, 1, Integer::sum);
+                    if (isAc) {
+                        tagAcCount.merge(tagLabel, 1, Integer::sum);
+                    }
                 }
             }
         }

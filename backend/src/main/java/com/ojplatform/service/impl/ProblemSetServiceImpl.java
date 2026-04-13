@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ojplatform.dto.CreateProblemSetDTO;
 import com.ojplatform.dto.ProblemSetItemDetailDTO;
 import com.ojplatform.dto.QuickGenerateDTO;
@@ -12,33 +13,37 @@ import com.ojplatform.entity.ProblemSet;
 import com.ojplatform.entity.ProblemSetItem;
 import com.ojplatform.mapper.ProblemSetItemMapper;
 import com.ojplatform.mapper.ProblemSetMapper;
+import com.ojplatform.mapper.ProblemTagRelationMapper;
 import com.ojplatform.service.ProblemService;
 import com.ojplatform.service.ProblemSetService;
 import com.ojplatform.service.SubmissionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * 题单服务实现类
- * 负责题单 CRUD、快速组题（按难度分布随机抽取）、题目管理
  */
 @Service
 public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, ProblemSet> implements ProblemSetService {
 
     private static final Logger log = LoggerFactory.getLogger(ProblemSetServiceImpl.class);
 
-    /** 预设难度分布：入门级 */
     private static final Map<String, Integer> BEGINNER_DIST = Map.of("Easy", 70, "Medium", 30, "Hard", 0);
-    /** 预设难度分布：进阶级 */
     private static final Map<String, Integer> INTERMEDIATE_DIST = Map.of("Easy", 20, "Medium", 60, "Hard", 20);
-    /** 预设难度分布：挑战级 */
     private static final Map<String, Integer> ADVANCED_DIST = Map.of("Easy", 0, "Medium", 40, "Hard", 60);
 
     @Autowired
@@ -52,6 +57,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ProblemTagRelationMapper problemTagRelationMapper;
 
     @Override
     @Transactional
@@ -69,7 +77,6 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         ps.setTotalScore(0);
         baseMapper.insert(ps);
 
-        // 如果提供了初始题目列表，逐个添加
         if (dto.getProblems() != null && !dto.getProblems().isEmpty()) {
             int seq = 1;
             int totalScore = 0;
@@ -99,16 +106,13 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
     @Override
     @Transactional
     public ProblemSet quickGenerate(QuickGenerateDTO dto) {
-        // 1. 确定难度分布
         Map<String, Integer> distribution = getDistribution(dto);
         int totalCount = dto.getCount();
 
-        // 2. 计算每种难度的题目数量
         int easyCount = (int) Math.round(totalCount * distribution.getOrDefault("Easy", 0) / 100.0);
         int hardCount = (int) Math.round(totalCount * distribution.getOrDefault("Hard", 0) / 100.0);
         int mediumCount = totalCount - easyCount - hardCount;
 
-        // 3. 获取用户已解决的题目 ID（如果需要排除）
         Set<String> solvedSlugs = new HashSet<>();
         if (Boolean.TRUE.equals(dto.getExcludeSolved())) {
             Map<String, String> statusMap = submissionService.getUserStatusMap(dto.getUserId());
@@ -118,22 +122,28 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
                     .collect(Collectors.toSet());
         }
 
-        // 4. 从数据库随机抽取题目
         List<Problem> selectedProblems = new ArrayList<>();
-        if (easyCount > 0) selectedProblems.addAll(randomPickProblems("Easy", easyCount, dto.getOjPlatform(), dto.getTags(), solvedSlugs));
-        if (mediumCount > 0) selectedProblems.addAll(randomPickProblems("Medium", mediumCount, dto.getOjPlatform(), dto.getTags(), solvedSlugs));
-        if (hardCount > 0) selectedProblems.addAll(randomPickProblems("Hard", hardCount, dto.getOjPlatform(), dto.getTags(), solvedSlugs));
+        if (easyCount > 0) {
+            selectedProblems.addAll(randomPickProblems("Easy", easyCount, dto.getOjPlatform(), dto.getTags(), solvedSlugs));
+        }
+        if (mediumCount > 0) {
+            selectedProblems.addAll(randomPickProblems("Medium", mediumCount, dto.getOjPlatform(), dto.getTags(), solvedSlugs));
+        }
+        if (hardCount > 0) {
+            selectedProblems.addAll(randomPickProblems("Hard", hardCount, dto.getOjPlatform(), dto.getTags(), solvedSlugs));
+        }
 
         if (selectedProblems.isEmpty()) {
             throw new RuntimeException("没有符合条件的题目，请调整筛选条件");
         }
 
-        // 5. 按难度排序（Easy → Medium → Hard）
         Map<String, Integer> diffOrder = Map.of("Easy", 1, "Medium", 2, "Hard", 3);
         selectedProblems.sort(Comparator.comparingInt(p -> diffOrder.getOrDefault(p.getDifficulty(), 99)));
 
-        // 6. 创建题单
         String title = dto.getTitle();
+        if (title != null) {
+            title = title.trim();
+        }
         if (title == null || title.isBlank()) {
             title = "快速组题 - " + dto.getDifficultyLevel() + " (" + selectedProblems.size() + "题)";
         }
@@ -148,7 +158,6 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         ps.setStatus("published");
         ps.setProblemCount(selectedProblems.size());
 
-        // 保存标签信息
         if (dto.getTags() != null && !dto.getTags().isEmpty()) {
             try {
                 ps.setTags(objectMapper.writeValueAsString(dto.getTags()));
@@ -161,7 +170,6 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         ps.setTotalScore(totalScore);
         baseMapper.insert(ps);
 
-        // 7. 插入题目关联
         int seq = 1;
         for (Problem p : selectedProblems) {
             ProblemSetItem psi = new ProblemSetItem();
@@ -207,21 +215,27 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
     @Transactional
     public void addProblemToSet(Long setId, String problemSlug, Integer score, Long userId) {
         ProblemSet ps = baseMapper.selectById(setId);
-        if (ps == null) throw new RuntimeException("题单不存在");
-        if (!ps.getUserId().equals(userId)) throw new RuntimeException("无权操作此题单");
+        if (ps == null) {
+            throw new RuntimeException("题单不存在");
+        }
+        if (!ps.getUserId().equals(userId)) {
+            throw new RuntimeException("无权操作此题单");
+        }
 
         Problem problem = problemService.getBySlug(problemSlug, ps.getOjPlatform());
-        if (problem == null) throw new RuntimeException("题目不存在：" + problemSlug);
+        if (problem == null) {
+            throw new RuntimeException("题目不存在：" + problemSlug);
+        }
 
-        // 检查是否已在题单中
         Long count = problemSetItemMapper.selectCount(
                 new LambdaQueryWrapper<ProblemSetItem>()
                         .eq(ProblemSetItem::getSetId, setId)
                         .eq(ProblemSetItem::getProblemId, problem.getId())
         );
-        if (count > 0) throw new RuntimeException("该题目已在题单中");
+        if (count > 0) {
+            throw new RuntimeException("该题目已在题单中");
+        }
 
-        // 获取当前最大序号
         int maxSeq = ps.getProblemCount();
 
         ProblemSetItem psi = new ProblemSetItem();
@@ -231,7 +245,6 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         psi.setScore(score != null ? score : 100);
         problemSetItemMapper.insert(psi);
 
-        // 更新题单统计
         ps.setProblemCount(maxSeq + 1);
         ps.setTotalScore(ps.getTotalScore() + psi.getScore());
         baseMapper.updateById(ps);
@@ -241,20 +254,24 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
     @Transactional
     public void removeProblemFromSet(Long setId, Long itemId, Long userId) {
         ProblemSet ps = baseMapper.selectById(setId);
-        if (ps == null) throw new RuntimeException("题单不存在");
-        if (!ps.getUserId().equals(userId)) throw new RuntimeException("无权操作此题单");
+        if (ps == null) {
+            throw new RuntimeException("题单不存在");
+        }
+        if (!ps.getUserId().equals(userId)) {
+            throw new RuntimeException("无权操作此题单");
+        }
 
         ProblemSetItem item = problemSetItemMapper.selectById(itemId);
-        if (item == null || !item.getSetId().equals(setId)) throw new RuntimeException("题目关联不存在");
+        if (item == null || !item.getSetId().equals(setId)) {
+            throw new RuntimeException("题目关联不存在");
+        }
 
         problemSetItemMapper.deleteById(itemId);
 
-        // 更新序号和统计
         ps.setProblemCount(ps.getProblemCount() - 1);
         ps.setTotalScore(ps.getTotalScore() - item.getScore());
         baseMapper.updateById(ps);
 
-        // 重新排序
         List<ProblemSetItem> remaining = problemSetItemMapper.selectList(
                 new LambdaQueryWrapper<ProblemSetItem>()
                         .eq(ProblemSetItem::getSetId, setId)
@@ -274,8 +291,12 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
     @Transactional
     public void reorderItems(Long setId, List<Long> itemIds, Long userId) {
         ProblemSet ps = baseMapper.selectById(setId);
-        if (ps == null) throw new RuntimeException("题单不存在");
-        if (!ps.getUserId().equals(userId)) throw new RuntimeException("无权操作此题单");
+        if (ps == null) {
+            throw new RuntimeException("题单不存在");
+        }
+        if (!ps.getUserId().equals(userId)) {
+            throw new RuntimeException("无权操作此题单");
+        }
 
         int seq = 1;
         for (Long itemId : itemIds) {
@@ -291,10 +312,13 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
     @Transactional
     public void deleteProblemSet(Long setId, Long userId) {
         ProblemSet ps = baseMapper.selectById(setId);
-        if (ps == null) throw new RuntimeException("题单不存在");
-        if (!ps.getUserId().equals(userId)) throw new RuntimeException("无权操作此题单");
+        if (ps == null) {
+            throw new RuntimeException("题单不存在");
+        }
+        if (!ps.getUserId().equals(userId)) {
+            throw new RuntimeException("无权操作此题单");
+        }
 
-        // 级联删除题目关联（数据库外键 ON DELETE CASCADE 会自动处理）
         baseMapper.deleteById(setId);
         log.info("删除题单：id={}", setId);
     }
@@ -302,20 +326,25 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
     @Override
     public void updateProblemSet(Long setId, CreateProblemSetDTO dto) {
         ProblemSet ps = baseMapper.selectById(setId);
-        if (ps == null) throw new RuntimeException("题单不存在");
-        if (!ps.getUserId().equals(dto.getUserId())) throw new RuntimeException("无权操作此题单");
+        if (ps == null) {
+            throw new RuntimeException("题单不存在");
+        }
+        if (!ps.getUserId().equals(dto.getUserId())) {
+            throw new RuntimeException("无权操作此题单");
+        }
 
-        if (dto.getTitle() != null) ps.setTitle(dto.getTitle());
-        if (dto.getDescription() != null) ps.setDescription(dto.getDescription());
-        if (dto.getDifficultyLevel() != null) ps.setDifficultyLevel(dto.getDifficultyLevel());
+        if (dto.getTitle() != null) {
+            ps.setTitle(dto.getTitle());
+        }
+        if (dto.getDescription() != null) {
+            ps.setDescription(dto.getDescription());
+        }
+        if (dto.getDifficultyLevel() != null) {
+            ps.setDifficultyLevel(dto.getDifficultyLevel());
+        }
         baseMapper.updateById(ps);
     }
 
-    // ==================== 私有辅助方法 ====================
-
-    /**
-     * 获取难度分布
-     */
     private Map<String, Integer> getDistribution(QuickGenerateDTO dto) {
         if ("custom".equals(dto.getDifficultyLevel()) && dto.getDistribution() != null) {
             return Map.of(
@@ -331,36 +360,39 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         };
     }
 
-    /**
-     * 从数据库随机抽取指定难度的题目
-     */
     private List<Problem> randomPickProblems(String difficulty, int count, String ojPlatform,
-                                              List<String> tags, Set<String> excludeSlugs) {
+                                             List<String> tags, Set<String> excludeSlugs) {
         LambdaQueryWrapper<Problem> wrapper = new LambdaQueryWrapper<Problem>()
                 .eq(Problem::getDifficulty, difficulty)
                 .eq(Problem::getOjPlatform, ojPlatform);
 
-        // 排除已解决的题目
         if (!excludeSlugs.isEmpty()) {
             wrapper.notIn(Problem::getSlug, excludeSlugs);
         }
 
-        // 查出所有符合条件的题目
-        List<Problem> candidates = problemService.list(wrapper);
-
-        // 如果有标签过滤，在内存中过滤（因为 topic_tags 是 JSON 字段）
-        if (tags != null && !tags.isEmpty()) {
-            candidates = candidates.stream()
-                    .filter(p -> {
-                        if (p.getTopicTags() == null) return false;
-                        String tagStr = p.getTopicTags().toLowerCase();
-                        return tags.stream().anyMatch(t -> tagStr.contains(t.toLowerCase()));
-                    })
-                    .collect(Collectors.toList());
+        List<String> normalizedTags = normalizeTags(tags);
+        if (!normalizedTags.isEmpty()) {
+            List<Long> taggedProblemIds = problemTagRelationMapper
+                    .selectProblemIdsByPlatformAndTags(ojPlatform, normalizedTags);
+            if (taggedProblemIds.isEmpty()) {
+                return List.of();
+            }
+            wrapper.in(Problem::getId, taggedProblemIds);
         }
 
-        // 随机打乱后取前 N 个
+        List<Problem> candidates = problemService.list(wrapper);
         Collections.shuffle(candidates);
         return candidates.stream().limit(count).collect(Collectors.toList());
+    }
+
+    private List<String> normalizeTags(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return List.of();
+        }
+        return tags.stream()
+                .filter(StringUtils::hasText)
+                .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
+                .distinct()
+                .toList();
     }
 }

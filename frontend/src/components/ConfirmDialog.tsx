@@ -3,16 +3,16 @@ import { AlertTriangle, Info, XCircle } from 'lucide-react'
 
 const typeConfig = {
   info: {
-    icon: <Info size={20} className="text-blue-400" />,
-    confirmClass: 'bg-blue-600 hover:bg-blue-700',
+    icon: <Info size={20} style={{ color: 'var(--info)' }} />,
+    confirmClass: 'theme-button-blue',
   },
   warning: {
-    icon: <AlertTriangle size={20} className="text-yellow-400" />,
-    confirmClass: 'bg-yellow-600 hover:bg-yellow-700',
+    icon: <AlertTriangle size={20} style={{ color: 'var(--warning)' }} />,
+    confirmClass: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:brightness-110',
   },
   danger: {
-    icon: <XCircle size={20} className="text-red-400" />,
-    confirmClass: 'bg-red-600 hover:bg-red-700',
+    icon: <XCircle size={20} style={{ color: 'var(--danger)' }} />,
+    confirmClass: 'theme-button-danger',
   },
 }
 
@@ -25,9 +25,9 @@ export default function ConfirmDialog() {
   const config = typeConfig[type]
 
   return (
-    <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => close(false)}>
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center theme-overlay" onClick={() => close(false)}>
       <div
-        className="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl w-[400px] overflow-hidden animate-scale-in"
+        className="theme-modal w-[400px] rounded-2xl overflow-hidden animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
@@ -35,22 +35,22 @@ export default function ConfirmDialog() {
             <div className="shrink-0 mt-0.5">{config.icon}</div>
             <div className="flex-1">
               {options.title && (
-                <h3 className="font-medium text-gray-100 mb-1">{options.title}</h3>
+                <h3 className="font-medium theme-text mb-1">{options.title}</h3>
               )}
-              <p className="text-sm text-gray-400 leading-relaxed">{options.message}</p>
+              <p className="text-sm theme-muted leading-relaxed">{options.message}</p>
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-2 px-6 py-4 bg-gray-850 border-t border-gray-700">
+        <div className="flex justify-end gap-2 px-6 py-4 border-t theme-border" style={{ background: 'var(--hover-bg)' }}>
           <button
             onClick={() => close(false)}
-            className="px-4 py-2 text-sm text-gray-300 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 text-sm theme-button-secondary rounded-xl transition"
           >
             {options.cancelText || '取消'}
           </button>
           <button
             onClick={() => close(true)}
-            className={`px-4 py-2 text-sm text-white rounded-lg transition-colors ${config.confirmClass}`}
+            className={`px-4 py-2 text-sm rounded-xl transition ${config.confirmClass}`}
           >
             {options.confirmText || '确定'}
           </button>

@@ -13,24 +13,27 @@ import {
 import { useProblemStore } from '@/store/problemStore'
 import { useSessionStore, createChatMsg } from '@/store/sessionStore'
 import { useUserStore } from '@/store/userStore'
+import { useThemeStore } from '@/store/uiStore'
 import { submitCode, pollSubmissionResult, getUserProblemSubmissions } from '@/api/submission'
 import { recommendNextStream, analyzeCodeStream, sendChatStream, requestHintStream } from '@/api/dify'
 import { addNextProblem } from '@/api/session'
 import { saveDraft, getDrafts } from '@/api/draft'
 import { PLATFORM_LANGUAGES, DEFAULT_CODE_TEMPLATES, PLATFORM_LABELS } from '@/config/platforms'
 import UserMenu from '@/components/UserMenu'
+import ThemeToggle from '@/components/ThemeToggle'
 import TrackSidebar from '@/components/TrackSidebar'
 import type { Submission, DifyChatResponse } from '@/types'
+import { getProblemTagKey, getProblemTagLabel } from '@/utils/problemTags'
 
 /** 提交状态颜色 */
 const statusColor: Record<string, string> = {
-  Accepted: 'bg-emerald-900/40 text-emerald-400',
-  'Wrong Answer': 'bg-red-900/40 text-red-400',
-  'Time Limit Exceeded': 'bg-amber-900/40 text-amber-400',
-  'Memory Limit Exceeded': 'bg-amber-900/40 text-amber-400',
-  'Runtime Error': 'bg-orange-900/40 text-orange-400',
-  'Compile Error': 'bg-orange-900/40 text-orange-400',
-  'Output Limit Exceeded': 'bg-orange-900/40 text-orange-400',
+  Accepted: 'theme-status-accepted',
+  'Wrong Answer': 'theme-status-error',
+  'Time Limit Exceeded': 'theme-status-warning',
+  'Memory Limit Exceeded': 'theme-status-warning',
+  'Runtime Error': 'theme-status-error',
+  'Compile Error': 'theme-status-error',
+  'Output Limit Exceeded': 'theme-status-warning',
 }
 
 export default function ProblemPage() {
@@ -44,6 +47,7 @@ export default function ProblemPage() {
     addChatMessage, updateChatMessage, setChatLoading,
   } = useSessionStore()
   const { user } = useUserStore()
+  const theme = useThemeStore((s) => s.theme)
 
   /** 根据当前平台动态获取语言列表 */
   const LANGUAGES = PLATFORM_LANGUAGES[ojPlatform] || PLATFORM_LANGUAGES.leetcode
@@ -640,26 +644,27 @@ export default function ProblemPage() {
   }
 
   const monacoLang = language.monacoLang
+  const editorTheme = theme === 'dark' ? 'vs-dark' : 'light'
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
+    <div className="h-screen flex flex-col theme-bg">
 
       {/* 顶部导航栏 */}
-      <header className="flex items-center gap-4 px-4 py-2 bg-gray-800 border-b border-gray-700 shrink-0">
+      <header className="flex items-center gap-4 px-4 py-2 theme-header shrink-0">
         <button
           onClick={() => navigate('/')}
-          className="p-1.5 rounded hover:bg-gray-700 transition"
+          className="p-1.5 rounded-lg theme-button-ghost transition"
           title="返回题库"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-5 bg-gray-600" />
+        <div className="w-px h-5" style={{ background: 'var(--border-color)' }} />
 
         {!historyOpen && (
           <button
             onClick={() => setHistoryOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs text-gray-400 hover:text-gray-200 hover:bg-gray-700 transition"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs theme-button-ghost transition"
             title="展开历史面板"
           >
             <PanelLeftOpen className="w-4 h-4" />
@@ -667,9 +672,9 @@ export default function ProblemPage() {
           </button>
         )}
 
-        <span className="px-3 py-1 text-xs bg-gray-700 rounded">{PLATFORM_LABELS[ojPlatform] || ojPlatform}</span>
+        <span className="px-3 py-1 text-xs theme-tag rounded-lg">{PLATFORM_LABELS[ojPlatform] || ojPlatform}</span>
 
-        <span className="text-sm font-medium">
+        <span className="text-sm font-medium theme-text">
           {currentProblem
             ? `${currentProblem.frontendId}. ${currentProblem.title}`
             : '加载中...'}
@@ -680,15 +685,17 @@ export default function ProblemPage() {
         <button
           onClick={handleNextProblem}
           disabled={recommending}
-          className="flex items-center gap-1.5 px-4 py-1.5 text-sm bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 transition"
+          className="flex items-center gap-1.5 px-4 py-1.5 text-sm theme-button-primary rounded-xl disabled:opacity-50 transition"
         >
           {recommending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SkipForward className="w-3.5 h-3.5" />}
           下一题
         </button>
 
+        <ThemeToggle />
+
         {user && (
           <>
-            <div className="w-px h-5 bg-gray-600" />
+            <div className="w-px h-5" style={{ background: 'var(--border-color)' }} />
             <UserMenu />
           </>
         )}
@@ -724,67 +731,81 @@ export default function ProblemPage() {
         {/* 中央：题目描述 */}
         <div className="flex-1 overflow-y-auto p-6">
           {problemLoading ? (
-            <div className="flex items-center justify-center h-full text-gray-500">
+            <div className="flex items-center justify-center h-full theme-faint">
               <Loader2 className="w-6 h-6 animate-spin mr-2" />
               加载题目中...
             </div>
           ) : currentProblem?.contentMarkdown ? (
             ojPlatform === 'luogu' ? (
-              <div className="prose prose-invert max-w-none text-sm">
+              <div className="theme-prose max-w-none text-sm">
                 <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{currentProblem.contentMarkdown}</Markdown>
               </div>
             ) : (
               <div
-                className="prose prose-invert max-w-none text-sm"
+                className="theme-prose max-w-none text-sm"
                 dangerouslySetInnerHTML={{ __html: currentProblem.contentMarkdown }}
               />
             )
           ) : (
-            <p className="text-gray-500 text-sm">暂无题目描述</p>
+            <p className="theme-faint text-sm">暂无题目描述</p>
+          )}
+
+          {/* 标签 */}
+          {currentProblem?.topicTags && currentProblem.topicTags.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              {currentProblem.topicTags.map((tag, index) => (
+                <span
+                  key={getProblemTagKey(tag, index)}
+                  className="rounded-full px-2 py-1 text-[11px] theme-chip"
+                >
+                  {getProblemTagLabel(tag)}
+                </span>
+              ))}
+            </div>
           )}
 
           {/* 提交记录面板 */}
-          <div className="mt-6 border-t border-gray-700 pt-4">
+          <div className="mt-6 border-t theme-border pt-4">
             <button
               onClick={() => setSubmissionsOpen((v) => !v)}
-              className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-gray-100 transition mb-2"
+              className="flex items-center gap-1.5 text-sm theme-muted hover:text-[var(--text-primary)] transition mb-2"
             >
               {submissionsOpen
                 ? <ChevronDown className="w-4 h-4" />
                 : <ChevronRight className="w-4 h-4" />}
               提交记录
               {problemSubmissions.length > 0 && (
-                <span className="text-xs text-gray-500">({problemSubmissions.length})</span>
+                <span className="text-xs theme-faint">({problemSubmissions.length})</span>
               )}
             </button>
 
             {submissionsOpen && (
               problemSubmissions.length === 0 ? (
-                <p className="text-xs text-gray-500 py-2">暂无提交记录</p>
+                <p className="text-xs theme-faint py-2">暂无提交记录</p>
               ) : (
                 <div className="space-y-1.5 max-h-64 overflow-y-auto">
                   {problemSubmissions.map((sub) => (
                     <div
                       key={sub.id}
-                      className="flex items-center gap-3 px-3 py-2 rounded bg-gray-800/60 text-xs"
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg theme-card text-xs"
                     >
                       {/* 状态 */}
                       <span className={`shrink-0 px-1.5 py-0.5 rounded text-[11px] font-medium ${
-                        statusColor[sub.status] || 'bg-gray-700 text-gray-400'
+                        statusColor[sub.status] || 'theme-tag'
                       }`}>
                         {sub.status === 'Accepted' ? 'AC' : sub.status}
                       </span>
                       {/* 语言 */}
-                      <span className="text-gray-400 shrink-0">{sub.language}</span>
+                      <span className="theme-faint shrink-0">{sub.language}</span>
                       {/* 耗时 + 内存 */}
-                      {sub.runtime && <span className="text-gray-500">{sub.runtime}</span>}
-                      {sub.memory && <span className="text-gray-500">{sub.memory}</span>}
+                      {sub.runtime && <span className="theme-hint">{sub.runtime}</span>}
+                      {sub.memory && <span className="theme-hint">{sub.memory}</span>}
                       {/* 测试用例 */}
                       {sub.totalCorrect != null && sub.totalTestcases != null && (
-                        <span className="text-gray-500">{sub.totalCorrect}/{sub.totalTestcases}</span>
+                        <span className="theme-hint">{sub.totalCorrect}/{sub.totalTestcases}</span>
                       )}
                       {/* 时间 */}
-                      <span className="text-gray-600 ml-auto shrink-0">
+                      <span className="theme-hint ml-auto shrink-0">
                         {new Date(sub.submittedAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -797,7 +818,7 @@ export default function ProblemPage() {
 
         {/* 水平拖拽手柄 */}
         <div
-          className="w-1 shrink-0 bg-gray-700 hover:bg-indigo-500 cursor-col-resize transition-colors"
+          className="w-1 shrink-0 theme-drag-h"
           onMouseDown={handleHorizontalDragStart}
         />
 
@@ -809,11 +830,11 @@ export default function ProblemPage() {
         >
 
           {/* 编程语言选择 + 提示按钮 + 重置按钮 */}
-          <div className="flex items-center justify-end gap-2 px-3 py-1.5 bg-gray-800 border-b border-gray-700">
+          <div className="flex items-center justify-end gap-2 px-3 py-1.5 theme-header shrink-0">
             <button
               onClick={handleRequestHint}
               disabled={hintLoading || !currentSession || (slug ? (hintLevels[slug] || 0) >= 3 : true)}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-amber-400 hover:text-amber-300 hover:bg-gray-700 rounded transition disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--warning)] theme-hover rounded transition disabled:opacity-40 disabled:cursor-not-allowed"
               title={`渐进式提示 (${slug ? (hintLevels[slug] || 0) : 0}/3)`}
             >
               {hintLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Lightbulb className="w-3 h-3" />}
@@ -821,7 +842,7 @@ export default function ProblemPage() {
             </button>
             <button
               onClick={handleResetCode}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-gray-400 hover:text-gray-200 hover:bg-gray-700 rounded transition"
+              className="flex items-center gap-1 px-2 py-1 text-xs theme-button-ghost rounded transition"
               title="重置为初始代码模板"
             >
               <RotateCcw className="w-3 h-3" />
@@ -830,7 +851,7 @@ export default function ProblemPage() {
             <select
               value={language.value}
               onChange={(e) => handleLanguageChange(e.target.value)}
-              className="px-3 py-1 text-xs bg-gray-700 border border-gray-600 rounded text-gray-200 focus:outline-none"
+              className="px-3 py-1 text-xs theme-select rounded"
             >
               {LANGUAGES.map((l) => (
                 <option key={l.value} value={l.value}>{l.label}</option>
@@ -843,7 +864,7 @@ export default function ProblemPage() {
             <Editor
               height="100%"
               language={monacoLang}
-              theme="vs-dark"
+              theme={editorTheme}
               value={code}
               onChange={handleCodeChange}
               options={{
@@ -856,11 +877,11 @@ export default function ProblemPage() {
           </div>
 
           {/* 提交按钮 */}
-          <div className="flex justify-center py-2 bg-gray-800 border-t border-gray-700 shrink-0">
+          <div className="flex justify-center py-2 theme-header shrink-0">
             <button
               onClick={handleSubmit}
               disabled={submitting || !code.trim()}
-              className="flex items-center gap-2 px-8 py-2 bg-green-600 rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="flex items-center gap-2 px-8 py-2 theme-button-success rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {submitting ? (
                 <><Loader2 className="w-4 h-4 animate-spin" />判题中...</>
@@ -871,9 +892,9 @@ export default function ProblemPage() {
           </div>
 
           {/* 垂直拖拽手柄 + 聊天框收放按钮 */}
-          <div className="flex items-center shrink-0 bg-gray-700">
+          <div className="flex items-center shrink-0" style={{ background: 'var(--drag-handle)' }}>
             <div
-              className="flex-1 h-1 cursor-row-resize hover:bg-indigo-500 transition-colors"
+              className="flex-1 h-1 theme-drag-v"
               onMouseDown={handleVerticalDragStart}
             />
             <button
@@ -886,7 +907,7 @@ export default function ProblemPage() {
                   setChatHeight(savedChatHeightRef.current)
                 }
               }}
-              className="px-2 py-0.5 text-gray-400 hover:text-gray-200 transition"
+              className="px-2 py-0.5 theme-button-ghost transition"
               title={chatCollapsed ? '展开聊天框' : '收起聊天框'}
             >
               {chatCollapsed
@@ -895,7 +916,7 @@ export default function ProblemPage() {
               }
             </button>
             <div
-              className="flex-1 h-1 cursor-row-resize hover:bg-indigo-500 transition-colors"
+              className="flex-1 h-1 theme-drag-v"
               onMouseDown={handleVerticalDragStart}
             />
           </div>
@@ -906,7 +927,8 @@ export default function ProblemPage() {
             style={{ height: chatCollapsed ? 32 : chatHeight }}
           >
             <div
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-400 border-b border-gray-700 bg-gray-800 cursor-pointer select-none"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold theme-faint border-b theme-border cursor-pointer select-none"
+              style={{ background: 'var(--header-bg)' }}
               onClick={() => {
                 if (!chatCollapsed) {
                   savedChatHeightRef.current = chatHeight
@@ -924,23 +946,23 @@ export default function ProblemPage() {
 
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
               {chatMessages.length === 0 ? (
-                <p className="text-xs text-gray-500 p-1">提交代码后会在此显示分析结果，也可以直接提问</p>
+                <p className="text-xs theme-faint p-1">提交代码后会在此显示分析结果，也可以直接提问</p>
               ) : (
                 chatMessages.map((msg) => (
                   <div key={msg.id} className={`flex gap-1.5 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                     {msg.role !== 'user' && (
                       <span className="shrink-0 mt-0.5">
                         {msg.role === 'assistant'
-                          ? <Bot className="w-3.5 h-3.5 text-indigo-400" />
+                          ? <Bot className="w-3.5 h-3.5 theme-accent-text" />
                           : <span className="w-3.5 h-3.5 block" />}
                       </span>
                     )}
-                    <div className={`text-xs rounded px-2 py-1.5 max-w-[85%] ${
+                    <div className={`text-xs rounded-lg px-2 py-1.5 max-w-[85%] ${
                       msg.role === 'user'
-                        ? 'bg-indigo-600 text-white whitespace-pre-wrap'
+                        ? 'chat-bubble-user whitespace-pre-wrap'
                         : msg.role === 'assistant'
-                          ? 'bg-gray-700 text-gray-200 chat-markdown'
-                          : 'bg-gray-800 text-gray-400 italic whitespace-pre-wrap'
+                          ? 'chat-bubble-assistant chat-markdown'
+                          : 'chat-bubble-system whitespace-pre-wrap'
                     }`}>
                       {msg.role === 'assistant'
                         ? <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{msg.content}</Markdown>
@@ -948,7 +970,7 @@ export default function ProblemPage() {
                       }
                     </div>
                     {msg.role === 'user' && (
-                      <User className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+                      <User className="w-3.5 h-3.5 theme-accent-text shrink-0 mt-0.5" />
                     )}
                   </div>
                 ))
@@ -956,7 +978,7 @@ export default function ProblemPage() {
               <div ref={chatEndRef} />
             </div>
 
-            <div className="flex items-center gap-2 px-2 py-1.5 border-t border-gray-700 bg-gray-800">
+            <div className="flex items-center gap-2 px-2 py-1.5 border-t theme-border" style={{ background: 'var(--header-bg)' }}>
               <input
                 type="text"
                 placeholder="输入问题..."
@@ -964,12 +986,12 @@ export default function ProblemPage() {
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendChat()}
                 disabled={chatLoading || !currentSession}
-                className="flex-1 px-2 py-1 text-xs bg-gray-700 border border-gray-600 rounded text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 disabled:opacity-50"
+                className="flex-1 px-2 py-1 text-xs theme-input rounded disabled:opacity-50"
               />
               <button
                 onClick={handleSendChat}
                 disabled={chatLoading || !chatInput.trim() || !currentSession}
-                className="p-1.5 bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 transition"
+                className="p-1.5 theme-button-primary rounded-lg disabled:opacity-50 transition"
               >
                 <Send className="w-3 h-3" />
               </button>

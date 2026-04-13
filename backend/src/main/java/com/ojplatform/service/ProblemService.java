@@ -2,6 +2,8 @@ package com.ojplatform.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ojplatform.dto.ProblemTagOptionDTO;
 import com.ojplatform.dto.ProblemQueryDTO;
 import com.ojplatform.entity.Problem;
 
@@ -26,4 +28,9 @@ public interface ProblemService extends IService<Problem> {
      * @return 题目实体
      */
     Problem getBySlug(String slug, String ojPlatform);
+
+    /**
+     * 搜索题库可选标签
+     */
+    Page<ProblemTagOptionDTO> searchTagOptions(String ojPlatform, String keyword, long pageNum, long pageSize);
 }

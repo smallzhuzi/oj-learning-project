@@ -54,6 +54,96 @@ CREATE TABLE problems (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='题目缓存表';
 
 -- ============================================================
+-- 2.1 标签类型表 (tag_types)
+-- 说明：定义系统级标签分类，如算法、数据结构、来源、场景等
+-- ============================================================
+CREATE TABLE tag_types (
+    id           BIGINT       NOT NULL AUTO_INCREMENT COMMENT '标签类型主键',
+    type_key     VARCHAR(50)  NOT NULL                COMMENT '类型键，如 algorithm / data_structure / source',
+    type_name    VARCHAR(100) NOT NULL                COMMENT '类型显示名',
+    description  VARCHAR(255) DEFAULT NULL            COMMENT '类型说明',
+    sort_order   INT          NOT NULL DEFAULT 0      COMMENT '排序值',
+    status       VARCHAR(20)  NOT NULL DEFAULT 'active' COMMENT '状态：active / disabled',
+    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_tag_types_key (type_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='标签类型表';
+
+-- ============================================================
+-- 2.2 统一标签表 (tags)
+-- 说明：平台无关的统一标签字典，供展示、筛选、画像、推荐复用
+-- ============================================================
+CREATE TABLE tags (
+    id              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '统一标签主键',
+    tag_type_id     BIGINT       NOT NULL                COMMENT '标签类型 ID',
+    tag_key         VARCHAR(100) NOT NULL                COMMENT '统一标签键',
+    display_name    VARCHAR(100) NOT NULL                COMMENT '显示名称',
+    alias_names     JSON         DEFAULT NULL            COMMENT '别名 JSON 列表',
+    description     VARCHAR(255) DEFAULT NULL            COMMENT '标签说明',
+    color           VARCHAR(30)  DEFAULT NULL            COMMENT '展示色值',
+    icon            VARCHAR(50)  DEFAULT NULL            COMMENT '预留图标字段',
+    parent_id       BIGINT       DEFAULT NULL            COMMENT '父标签 ID',
+    sort_order      INT          NOT NULL DEFAULT 0      COMMENT '排序值',
+    status          VARCHAR(20)  NOT NULL DEFAULT 'active' COMMENT '状态：active / disabled',
+    created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_tags_type_key (tag_type_id, tag_key),
+    INDEX idx_tags_parent_id (parent_id),
+    CONSTRAINT fk_tags_type FOREIGN KEY (tag_type_id) REFERENCES tag_types(id),
+    CONSTRAINT fk_tags_parent FOREIGN KEY (parent_id) REFERENCES tags(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一标签字典表';
+
+-- ============================================================
+-- 2.3 平台标签映射表 (platform_tags)
+-- 说明：保存平台原始标签并映射到统一标签
+-- ============================================================
+CREATE TABLE platform_tags (
+    id               BIGINT       NOT NULL AUTO_INCREMENT COMMENT '平台标签主键',
+    oj_platform      VARCHAR(30)  NOT NULL                COMMENT '平台标识',
+    source_tag_id    VARCHAR(100) DEFAULT NULL            COMMENT '平台原始标签 ID',
+    source_slug      VARCHAR(150) DEFAULT NULL            COMMENT '平台原始 slug',
+    source_name      VARCHAR(150) NOT NULL                COMMENT '平台原始标签名称',
+    normalized_key   VARCHAR(100) DEFAULT NULL            COMMENT '归一化键',
+    tag_type_id      BIGINT       DEFAULT NULL            COMMENT '推断标签类型 ID',
+    tag_id           BIGINT       DEFAULT NULL            COMMENT '映射到统一标签 ID',
+    metadata         JSON         DEFAULT NULL            COMMENT '扩展元数据',
+    created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_platform_tag_source (oj_platform, source_tag_id, source_slug, source_name),
+    INDEX idx_platform_tags_key (normalized_key),
+    INDEX idx_platform_tags_tag_id (tag_id),
+    CONSTRAINT fk_platform_tags_type FOREIGN KEY (tag_type_id) REFERENCES tag_types(id),
+    CONSTRAINT fk_platform_tags_tag FOREIGN KEY (tag_id) REFERENCES tags(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='平台标签映射表';
+
+-- ============================================================
+-- 2.4 题目标签关联表 (problem_tag_relations)
+-- 说明：记录题目与统一标签 / 平台标签的多对多关系
+-- ============================================================
+CREATE TABLE problem_tag_relations (
+    id               BIGINT   NOT NULL AUTO_INCREMENT COMMENT '关系主键',
+    problem_id       BIGINT   NOT NULL                COMMENT '题目 ID',
+    tag_id           BIGINT   DEFAULT NULL            COMMENT '统一标签 ID',
+    platform_tag_id  BIGINT   DEFAULT NULL            COMMENT '平台标签 ID',
+    created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_problem_tag_relation (problem_id, tag_id, platform_tag_id),
+    INDEX idx_ptr_problem_id (problem_id),
+    INDEX idx_ptr_tag_id (tag_id),
+    INDEX idx_ptr_platform_tag_id (platform_tag_id),
+    CONSTRAINT fk_ptr_problem FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ptr_tag FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ptr_platform_tag FOREIGN KEY (platform_tag_id) REFERENCES platform_tags(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='题目标签关联表';
+
+-- ============================================================
 -- 3. 提交记录表 (submissions)
 -- 说明：记录用户每次代码提交的详细信息和判题结果
 -- ============================================================
