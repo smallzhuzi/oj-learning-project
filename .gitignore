@@ -120,16 +120,18 @@ out/
 secrets/
 
 # ======================================
-# 4. 可选（根据项目实际情况调整）
+# 4. 项目特定忽略
 # ======================================
 
-*.md
-*.png
-/docs
-/tools
+### Claude Code 配置（AI 辅助开发配置，不需要提交） ###
 .claude/
-### 如果你使用 Yarn 2+ 的 Plug'n'Play，取消下面这行注释 ###
-# .pnp.*
-### 如果你使用 Maven 包装器并希望忽略 wrapper 本身，取消下面两行注释 ###
-# .mvn/wrapper/maven-wrapper.jar
-# .mvn/wrapper/maven-wrapper.properties
+CLAUDE.md
+PROJECT_REQUIREMENTS.md
+
+### 个人文件（不属于项目代码） ###
+*.docx
+*.doc
+docs/论文提取文本.txt
+
+### 工具脚本（本地使用） ###
+/tools

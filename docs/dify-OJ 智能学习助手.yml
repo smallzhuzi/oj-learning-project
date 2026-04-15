@@ -1,0 +1,928 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: OJ 智能学习助手
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/tongyi:0.1.16@d8bffbe45418f0c117fb3393e5e40e61faee98f9a2183f062e5a280e74b15d21
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: if-else
+      id: 1773426946780-source-1773427050531-target
+      source: '1773426946780'
+      sourceHandle: source
+      target: '1773427050531'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1773427050531-true-1773427481796-target
+      source: '1773427050531'
+      sourceHandle: 'true'
+      target: '1773427481796'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1773427050531-3c53c6fa-a226-41b0-81be-0c9c73ae1c19-1773427760557-target
+      source: '1773427050531'
+      sourceHandle: 3c53c6fa-a226-41b0-81be-0c9c73ae1c19
+      target: '1773427760557'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1773427050531-false-1773428074852-target
+      source: '1773427050531'
+      sourceHandle: 'false'
+      target: '1773428074852'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1773427481796-source-1773428149460-target
+      source: '1773427481796'
+      sourceHandle: source
+      target: '1773428149460'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1773427760557-source-1773428162694-target
+      source: '1773427760557'
+      sourceHandle: source
+      target: '1773428162694'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1773427931462-source-1773428170374-target
+      source: '1773427931462'
+      sourceHandle: source
+      target: '1773428170374'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1773428074852-source-1773428177043-target
+      source: '1773428074852'
+      sourceHandle: source
+      target: '1773428177043'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: 1773427050531-cf29f721-c2ef-491b-b929-f4d348c6f739-1773478444199-target
+      source: '1773427050531'
+      sourceHandle: cf29f721-c2ef-491b-b929-f4d348c6f739
+      target: '1773478444199'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: knowledge-retrieval
+        targetType: llm
+      id: 1773478444199-source-1773427931462-target
+      source: '1773478444199'
+      sourceHandle: source
+      target: '1773427931462'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: type
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: type
+        - default: ''
+          hint: ''
+          label: problem_slug
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: problem_slug
+        - default: ''
+          hint: ''
+          label: language
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: language
+        - default: ''
+          hint: ''
+          label: code
+          max_length: 30000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: code
+        - hint: ''
+          label: status
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: status
+        - default: ''
+          hint: ''
+          label: runtime
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: runtime
+        - default: ''
+          hint: ''
+          label: memory
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: memory
+        - default: ''
+          hint: ''
+          label: topic_tags
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: topic_tags
+        - default: ''
+          hint: ''
+          label: total_correct
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: total_correct
+        - default: ''
+          hint: ''
+          label: total_testcases
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: total_testcases
+        - default: ''
+          hint: ''
+          label: hint_level
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: hint_level
+        - default: ''
+          hint: ''
+          label: difficulty
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: difficulty
+        - default: ''
+          hint: ''
+          label: history
+          max_length: 10000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: history
+        - default: ''
+          hint: ''
+          label: submission_summary
+          max_length: 3000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: submission_summary
+      height: 446
+      id: '1773426946780'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: 56fcefb9-443d-477b-81d9-394502b749e8
+            value: submit_analysis
+            varType: string
+            variable_selector:
+            - '1773426946780'
+            - type
+          id: 'true'
+          logical_operator: and
+        - case_id: 3c53c6fa-a226-41b0-81be-0c9c73ae1c19
+          conditions:
+          - comparison_operator: is
+            id: 3f0be84a-36e1-4bd7-b8bc-dc6634488ac8
+            value: hint
+            varType: string
+            variable_selector:
+            - '1773426946780'
+            - type
+          id: 3c53c6fa-a226-41b0-81be-0c9c73ae1c19
+          logical_operator: and
+        - case_id: cf29f721-c2ef-491b-b929-f4d348c6f739
+          conditions:
+          - comparison_operator: is
+            id: 94c1fe5f-b875-4184-aef9-ab30af7130c1
+            value: recommend_next
+            varType: string
+            variable_selector:
+            - '1773426946780'
+            - type
+          id: cf29f721-c2ef-491b-b929-f4d348c6f739
+          logical_operator: and
+        selected: false
+        title: 条件分支
+        type: if-else
+      height: 219
+      id: '1773427050531'
+      position:
+        x: 382
+        y: 282
+      positionAbsolute:
+        x: 382
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            enable_search: true
+            temperature: 0.7
+          mode: chat
+          name: qwen3-max
+          provider: langgenius/tongyi/tongyi
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - edition_type: basic
+          id: fe0cca72-9f41-4c3d-a7cc-ee71c2bece03
+          role: system
+          text: '
+
+            你是一位资深算法教练，负责分析学生的代码提交结果。
+
+
+
+            ## 当前题目信息
+
+            - 题目：{{#sys.query#}}
+
+            - 标签：{{#1773426946780.topic_tags#}}
+
+
+
+            ## 提交结果
+
+            - 状态：{{#1773426946780.status#}}
+
+            - 通过用例：
+
+            {{#1773426946780.total_correct#}} / {{#1773426946780.total_testcases#}}
+
+            - 耗时：{{#1773426946780.runtime#}}
+
+            - 内存：{{#1773426946780.memory#}}
+
+
+
+            ## 用户代码
+
+            {{#1773426946780.language#}}
+
+            {{#1773426946780.code#}}
+
+
+
+
+            ## 分析要求
+
+            根据判题状态，重点分析以下方面：
+
+
+
+            ### 如果是 Accepted（通过）：
+
+            1. 分析时间复杂度和空间复杂度
+
+            2. 如果耗时或内存较高，给出优化方案
+
+            3. 是否有更优解法（结合题目标签提示方向）
+
+
+
+            ### 如果是 Wrong Answer（答案错误）：
+
+            1. 指出代码中的逻辑错误
+
+            2. 分析可能遗漏的边界条件（如空数组、负数、溢出等）
+
+            3. 给出修正思路，但不要直接给完整答案
+
+
+
+            ### 如果是 Time Limit Exceeded（超时）：
+
+            1. 分析当前算法的时间复杂度
+
+            2. 指出导致超时的核心瓶颈
+
+            3. 建议更优的算法思路（结合题目标签）
+
+
+
+            ### 如果是 Runtime Error（运行时错误）：
+
+            1. 检查数组越界、空指针、栈溢出、整数溢出等常见问题
+
+            2. 给出具体的错误定位和修正建议
+
+
+
+            ### 如果是 Compile Error（编译错误）：
+
+            1. 指出语法错误
+
+            2. 给出修正代码片段
+
+
+
+            ## 输出规范
+
+            - 使用中文回答
+
+            - 简洁有条理，使用 markdown 格式
+
+            - 不要输出完整的正确代码，引导学生自己修改
+
+            - 复杂度分析用 O(...) 表示
+
+            '
+        selected: false
+        title: LLM 2
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1773427481796'
+      position:
+        x: 683
+        y: 282
+      positionAbsolute:
+        x: 683
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            enable_search: true
+            temperature: 0.7
+          mode: chat
+          name: qwen3-max
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: 1ccf7efe-d211-4c50-b59d-4de6872fc64e
+          role: system
+          text: '你是一位编程教练，采用苏格拉底式教学法，引导学生逐步思考解题。
+
+
+
+            ## 当前题目信息
+
+            - 题目：{{#1773426946780.problem_slug#}}
+
+            - 难度：{{#1773426946780.difficulty#}}
+
+            - 标签：{{#1773426946780.topic_tags#}}
+
+
+
+            ## 提示级别
+
+            当前请求级别：{{#1773426946780.hint_level#}}
+
+
+
+            ## 提示策略（严格遵守）
+
+
+
+            ### 级别 1 — 思路方向
+
+            - 只给出解题的大方向，如"这道题可以用什么类型的数据结构/算法"
+
+            - 用提问的方式引导，如"你觉得暴力解法的复杂度是多少？有没有办法避免重复计算？"
+
+            - 绝对不要透露具体的算法名称或步骤
+
+            - 控制在 2-3 句话以内
+
+
+
+            ### 级别 2 — 关键步骤
+
+            - 说明算法的核心思路和关键步骤
+
+            - 可以提及具体的算法/数据结构名称（如"双指针"、"滑动窗口"）
+
+            - 指出需要注意的边界条件
+
+            - 不要给出任何代码（包括伪代码）
+
+            - 控制在 5-8 句话以内
+
+
+
+            ### 级别 3 — 伪代码框架
+
+            - 给出解题的伪代码框架
+
+            - 包含主要函数结构和关键逻辑
+
+            - 用自然语言描述每一步，而非具体编程语言
+
+            - 仍然不要给出可以直接复制的完整代码
+
+
+
+            ## 输出规范
+
+            - 使用中文回答
+
+            - 保持鼓励和引导的语气
+
+            - 每次只输出当前级别的提示，不要跨级
+
+            '
+        selected: true
+        title: LLM 3
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1773427760557'
+      position:
+        x: 683
+        y: 408
+      positionAbsolute:
+        x: 683
+        y: 408
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1773478444199'
+          - result
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            enable_search: true
+            temperature: 0.7
+          mode: chat
+          name: qwen3-max
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: 3153874d-f632-4b98-b6cb-47f9c33325b9
+          role: system
+          text: '你是一位算法学习路径规划师，负责根据学生的当前练习情况推荐下一道题。
+
+
+            ##题库内容
+
+            {{#context#}}
+
+
+            ## 当前题目
+
+            - 题目 slug：{{#1773426946780.problem_slug#}}
+
+            - 难度：{{#1773426946780.difficulty#}}
+
+            - 标签：{{#1773426946780.topic_tags#}}
+
+
+
+            ## 练习路径
+
+            {{#1773426946780.history#}}
+
+
+
+            ## 本次会话的练习表现
+
+            {{#1773426946780.submission_summary#}}
+
+
+
+            ## 推荐策略
+
+
+
+            1. **分析学生水平**：
+
+               - 根据提交摘要判断学生对当前题目类型的掌握程度
+
+               - 多次尝试才通过 → 还需要巩固
+
+               - 一次通过 → 可以提升难度或换类型
+
+               - 未通过 → 降低难度或给同类型的更简单题
+
+
+
+            2. **推荐规则**：
+
+               - 同一会话内不要重复推荐已做过的题目
+
+               - 难度递进：Easy → Medium → Hard
+
+               - 如果当前类型掌握较好，推荐相关但不同类型的题目（如数组 → 双指针）
+
+               - 如果当前类型掌握不好，推荐同类型同难度或更低难度的题目
+
+
+
+            3. **输出要求**：
+
+               - 推荐的题目必须是 LeetCode 上真实存在的题目
+
+               - 必须给出题目的 slug（如 two-sum、longest-substring-without-repeating-characters）
+
+               - slug 格式：全小写字母和数字，用连字符连接
+
+
+
+            ## 输出格式（严格遵守）
+
+
+
+            先简要分析学生当前水平（1-2句），然后推荐题目：
+
+
+
+            推荐下一题：**题目名称**
+
+            slug：`题目的slug`
+
+            推荐理由：（1-2句说明为什么推荐这道题）'
+        selected: false
+        title: LLM 4
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1773427931462'
+      position:
+        x: 983
+        y: 534
+      positionAbsolute:
+        x: 983
+        y: 534
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          query_prompt_template: '{{#sys.query#}}
+
+            '
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: qwen3-max
+          provider: langgenius/tongyi/tongyi
+        prompt_template:
+        - id: ca0b5400-acac-44dc-b8ea-29eb2eda4aa6
+          role: system
+          text: '你是一位耐心的编程教练，正在辅导学生做算法题。学生可能会问你关于算法、数据结构、编程语言语法、解题思路等任何问题。
+
+
+
+            ## 回答原则
+
+            1. 用中文回答，简洁有条理
+
+            2. 优先引导思考，而非直接给答案
+
+            3. 如果学生问"怎么做这道题"，不要直接给代码，先了解他的思路
+
+            4. 可以用类比、举例的方式解释概念
+
+            5. 鼓励学生，保持积极的学习氛围
+
+            6. 如果涉及代码示例，使用 markdown 代码块格式'
+        selected: false
+        title: LLM 5
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1773428074852'
+      position:
+        x: 683
+        y: 660
+      positionAbsolute:
+        x: 683
+        y: 660
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        answer: '{{#1773427481796.text#}}'
+        selected: false
+        title: 直接回复
+        type: answer
+        variables: []
+      height: 102
+      id: '1773428149460'
+      position:
+        x: 984
+        y: 282
+      positionAbsolute:
+        x: 984
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        answer: '{{#1773427760557.text#}}'
+        selected: false
+        title: 直接回复 2
+        type: answer
+        variables: []
+      height: 102
+      id: '1773428162694'
+      position:
+        x: 984
+        y: 408
+      positionAbsolute:
+        x: 984
+        y: 408
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        answer: '{{#1773427931462.text#}}'
+        selected: false
+        title: 直接回复 3
+        type: answer
+        variables: []
+      height: 102
+      id: '1773428170374'
+      position:
+        x: 1597.6242582646787
+        y: 534
+      positionAbsolute:
+        x: 1597.6242582646787
+        y: 534
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        answer: '{{#1773428074852.text#}}'
+        selected: false
+        title: 直接回复 4
+        type: answer
+        variables: []
+      height: 102
+      id: '1773428177043'
+      position:
+        x: 984
+        y: 660
+      positionAbsolute:
+        x: 984
+        y: 660
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        dataset_ids:
+        - 3LAD2EvOxWvU7x11Npuw8UT0N4cBHup/0Ywz8vMQkHrVsudAXSiFiwM/74r8IPdj
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: reranking_model
+          reranking_model:
+            model: gte-rerank
+            provider: langgenius/tongyi/tongyi
+          top_k: 4
+        query_attachment_selector: []
+        query_variable_selector:
+        - '1773426946780'
+        - sys.query
+        retrieval_mode: multiple
+        selected: false
+        title: 知识检索
+        type: knowledge-retrieval
+      height: 89
+      id: '1773478444199'
+      position:
+        x: 683
+        y: 534
+      positionAbsolute:
+        x: 683
+        y: 534
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    viewport:
+      x: -253.26861354271136
+      y: -200.9008164310061
+      zoom: 1.0139521788254915
+  rag_pipeline_variables: []
