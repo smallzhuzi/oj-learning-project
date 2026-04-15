@@ -42,8 +42,9 @@ export function publishContest(id: number) {
 
 /** 报名比赛 */
 export function registerContest(id: number, password?: string, teamId?: number, memberUserIds?: number[]) {
-  return request.post<any, ApiResult<void>>(`/contests/${id}/register`, memberUserIds || null, {
+  return request.post<any, ApiResult<void>>(`/contests/${id}/register`, memberUserIds ?? [], {
     params: { password: password || undefined, teamId: teamId || undefined },
+    headers: { 'Content-Type': 'application/json' },
   })
 }
 
