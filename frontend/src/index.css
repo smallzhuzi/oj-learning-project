@@ -214,6 +214,8 @@ option {
 /* ==================== 结构容器 ==================== */
 
 .theme-header {
+  position: relative;
+  z-index: 50;
   background: var(--header-bg);
   border-bottom: 1px solid var(--border-color);
   backdrop-filter: blur(16px);
