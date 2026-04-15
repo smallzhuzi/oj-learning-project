@@ -340,12 +340,13 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             }
 
             // 写入报名记录
-            ContestRegistration reg = new ContestRegistration();
-            reg.setContestId(contestId);
-            reg.setUserId(userId);
-            reg.setTeamId(teamId);
-            reg.setStatus("registered");
-            registrationMapper.insert(reg);
+            upsertRegistration(contestId, userId, teamId);
+
+            participantMapper.delete(
+                    new LambdaQueryWrapper<com.ojplatform.entity.ContestTeamParticipant>()
+                            .eq(com.ojplatform.entity.ContestTeamParticipant::getContestId, contestId)
+                            .eq(com.ojplatform.entity.ContestTeamParticipant::getTeamId, teamId)
+            );
 
             // 写入出场成员
             for (Long memberId : memberUserIds) {
@@ -379,15 +380,12 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         );
         if (exists > 0) throw new RuntimeException("已报名该比赛");
 
-        ContestRegistration reg = new ContestRegistration();
-        reg.setContestId(contestId);
-        reg.setUserId(userId);
-        reg.setStatus("registered");
-        registrationMapper.insert(reg);
+        upsertRegistration(contestId, userId, null);
         log.info("用户报名比赛：userId={}, contestId={}", userId, contestId);
     }
 
     @Override
+    @Transactional
     public void cancelRegistration(Long contestId, Long userId) {
         Contest contest = baseMapper.selectById(contestId);
         if (contest == null) throw new RuntimeException("比赛不存在");
@@ -411,6 +409,11 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
 
             teamReg.setStatus("cancelled");
             registrationMapper.updateById(teamReg);
+            participantMapper.delete(
+                    new LambdaQueryWrapper<com.ojplatform.entity.ContestTeamParticipant>()
+                            .eq(com.ojplatform.entity.ContestTeamParticipant::getContestId, contestId)
+                            .eq(com.ojplatform.entity.ContestTeamParticipant::getTeamId, teamReg.getTeamId())
+            );
             return;
         }
 
@@ -1145,6 +1148,32 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
                         .eq(ContestRegistration::getTeamId, teamId)
                         .eq(ContestRegistration::getStatus, "registered")
         ) > 0;
+    }
+
+    private ContestRegistration upsertRegistration(Long contestId, Long userId, Long teamId) {
+        ContestRegistration existing = registrationMapper.selectOne(
+                new LambdaQueryWrapper<ContestRegistration>()
+                        .eq(ContestRegistration::getContestId, contestId)
+                        .eq(ContestRegistration::getUserId, userId)
+                        .last("limit 1")
+        );
+
+        if (existing != null) {
+            existing.setTeamId(teamId);
+            existing.setStatus("registered");
+            existing.setRegisteredAt(LocalDateTime.now());
+            registrationMapper.updateById(existing);
+            return existing;
+        }
+
+        ContestRegistration reg = new ContestRegistration();
+        reg.setContestId(contestId);
+        reg.setUserId(userId);
+        reg.setTeamId(teamId);
+        reg.setStatus("registered");
+        reg.setRegisteredAt(LocalDateTime.now());
+        registrationMapper.insert(reg);
+        return reg;
     }
 
     private ContestTeam requireCaptainAndEditable(Long contestId, Long teamId, Long userId) {

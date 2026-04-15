@@ -70,7 +70,7 @@ public class ContestStandingSnapshotServiceImpl implements ContestStandingSnapsh
      * 读取比赛榜单，优先命中 Redis，未命中时回退到快照表。
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public StandingDTO getStanding(Long contestId) {
         Contest contest = contestMapper.selectById(contestId);
         if (contest == null) {
