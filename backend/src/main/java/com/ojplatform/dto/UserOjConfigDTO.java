@@ -3,17 +3,29 @@ package com.ojplatform.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * OJ 平台配置请求 DTO
+ * 用户 OJ 配置数据传输对象。
  */
 public class UserOjConfigDTO {
 
+    /**
+     * 在线判题平台。
+     */
     @NotBlank(message = "OJ 平台不能为空")
     private String ojPlatform;
 
+    /**
+     * Cookie 内容。
+     */
     private String cookieValue;
 
+    /**
+     * CSRF 令牌。
+     */
     private String csrfToken;
 
+    /**
+     * 额外配置。
+     */
     private String extraConfig;
 
     public String getOjPlatform() {

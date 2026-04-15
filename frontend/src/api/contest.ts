@@ -5,6 +5,9 @@ import type {
   ContestDetail,
   CreateContestParams,
   ContestTeam,
+  ContestTeamLobby,
+  ContestTeamDetail,
+  MyTeamSummary,
   ContestSubmission,
   StandingData,
   ProblemSetItemDetail,
@@ -38,9 +41,9 @@ export function publishContest(id: number) {
 }
 
 /** 报名比赛 */
-export function registerContest(id: number, password?: string) {
-  return request.post<any, ApiResult<void>>(`/contests/${id}/register`, null, {
-    params: password ? { password } : {},
+export function registerContest(id: number, password?: string, teamId?: number, memberUserIds?: number[]) {
+  return request.post<any, ApiResult<void>>(`/contests/${id}/register`, memberUserIds || null, {
+    params: { password: password || undefined, teamId: teamId || undefined },
   })
 }
 
@@ -50,13 +53,8 @@ export function cancelRegistration(id: number) {
 }
 
 /** 创建队伍 */
-export function createTeam(contestId: number, teamName: string) {
-  return request.post<any, ApiResult<ContestTeam>>(`/contests/${contestId}/teams`, { teamName })
-}
-
-/** 加入队伍 */
-export function joinTeam(contestId: number, inviteCode: string) {
-  return request.post<any, ApiResult<void>>(`/contests/${contestId}/teams/join`, { inviteCode })
+export function createTeam(contestId: number, teamName: string, description?: string) {
+  return request.post<any, ApiResult<ContestTeam>>(`/contests/${contestId}/teams`, { teamName, description })
 }
 
 /** 退出队伍 */
@@ -66,7 +64,31 @@ export function leaveTeam(contestId: number, teamId: number) {
 
 /** 获取队伍列表 */
 export function getTeams(contestId: number) {
-  return request.get<any, ApiResult<ContestTeam[]>>(`/contests/${contestId}/teams`)
+  return request.get<any, ApiResult<ContestTeamLobby[]>>(`/contests/${contestId}/teams`)
+}
+
+export function getMyTeam(contestId: number) {
+  return request.get<any, ApiResult<ContestTeamDetail | null>>(`/contests/${contestId}/teams/my`)
+}
+
+export function getMyTeams() {
+  return request.get<any, ApiResult<MyTeamSummary[]>>('/contests/teams/my')
+}
+
+export function updateTeam(contestId: number, teamId: number, teamName: string, description?: string) {
+  return request.put<any, ApiResult<ContestTeamDetail>>(`/contests/${contestId}/teams/${teamId}`, { teamName, description })
+}
+
+export function transferCaptain(contestId: number, teamId: number, targetUserId: number) {
+  return request.post<any, ApiResult<void>>(`/contests/${contestId}/teams/${teamId}/transfer-captain`, { targetUserId })
+}
+
+export function removeTeamMember(contestId: number, teamId: number, targetUserId: number) {
+  return request.delete<any, ApiResult<void>>(`/contests/${contestId}/teams/${teamId}/members/${targetUserId}`)
+}
+
+export function dissolveTeam(contestId: number, teamId: number) {
+  return request.delete<any, ApiResult<void>>(`/contests/${contestId}/teams/${teamId}`)
 }
 
 /** 比赛提交代码 */

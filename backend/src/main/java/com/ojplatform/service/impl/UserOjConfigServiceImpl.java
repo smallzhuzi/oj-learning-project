@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 用户 OJ 平台配置服务实现
+ * 用户判题配置相关业务实现。
  */
 @Service
 public class UserOjConfigServiceImpl extends ServiceImpl<UserOjConfigMapper, UserOjConfig>

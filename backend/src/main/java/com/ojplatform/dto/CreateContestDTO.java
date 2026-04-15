@@ -6,73 +6,125 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 创建比赛请求 DTO
+ * 创建比赛数据传输对象。
  */
 public class CreateContestDTO {
 
-    /** 创建者用户 ID（由后端从 JWT 中提取） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 比赛标题 */
+    /**
+     * 标题。
+     */
     @NotBlank(message = "比赛标题不能为空")
     private String title;
 
-    /** 比赛说明 */
+    /**
+     * 描述。
+     */
     private String description;
 
-    /** 比赛类型：individual / team */
+    /**
+     * 比赛类型。
+     */
     @NotBlank(message = "比赛类型不能为空")
     private String contestType;
 
-    /** 开始时间 */
+    /**
+     * 开始时间。
+     */
     @NotNull(message = "开始时间不能为空")
     private LocalDateTime startTime;
 
-    /** 比赛时长（分钟） */
+    /**
+     * 持续时间（分钟）。
+     */
     @NotNull(message = "比赛时长不能为空")
     private Integer durationMinutes;
 
-    /** 封榜时间（分钟，0 = 不封榜） */
+    /**
+     * 封榜时长（分钟）。
+     */
     private Integer freezeMinutes = 0;
 
-    /** 最大参赛人数（0 = 不限） */
+    /**
+     * 最大参赛人数。
+     */
     private Integer maxParticipants = 0;
 
-    /** 组队赛最大队伍人数 */
+    /**
+     * 最大队伍人数。
+     */
     private Integer maxTeamSize = 3;
 
-    /** 计分规则：acm / oi / cf */
+    /**
+     * 最小队伍人数。
+     */
+    private Integer minTeamSize = 1;
+
+    /**
+     * 计分规则。
+     */
     private String scoringRule = "acm";
 
-    /** ACM 罚时分钟数 */
+    /**
+     * 罚时（分钟）。
+     */
     private Integer penaltyTime = 20;
 
-    /** 允许的编程语言 */
+    /**
+     * 允许的编程语言。
+     */
     private List<String> allowLanguage;
 
-    /** 是否公开 */
+    /**
+     * 是否公开。
+     */
     private Boolean isPublic = true;
 
-    /** 私有比赛密码 */
+    /**
+     * 密码。
+     */
     private String password;
 
-    /** OJ 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
-    /** 出题方式：manual（手动选题）/ existing_set（已有题单）/ auto（自动组题） */
+    /**
+     * 出题来源。
+     */
     private String problemSource = "manual";
 
-    /** 已有题单 ID（problemSource=existing_set 时使用） */
+    /**
+     * 题单ID。
+     */
     private Long problemSetId;
 
-    /** 手动选题的题目 slug 列表（problemSource=manual 时使用） */
+    /**
+     * 题目列表。
+     */
     private List<ContestProblemItem> problems;
 
     /**
-     * 比赛题目项
+     * 是否立即发布。
+     */
+    private Boolean publish = false;
+
+    /**
+     * 比赛题目项数据传输对象。
      */
     public static class ContestProblemItem {
+        /**
+         * 题目标识。
+         */
         private String slug;
+        /**
+         * 分数。
+         */
         private Integer score = 100;
 
         public String getSlug() {
@@ -166,6 +218,14 @@ public class CreateContestDTO {
         this.maxTeamSize = maxTeamSize;
     }
 
+    public Integer getMinTeamSize() {
+        return minTeamSize;
+    }
+
+    public void setMinTeamSize(Integer minTeamSize) {
+        this.minTeamSize = minTeamSize;
+    }
+
     public String getScoringRule() {
         return scoringRule;
     }
@@ -236,5 +296,13 @@ public class CreateContestDTO {
 
     public void setProblems(List<ContestProblemItem> problems) {
         this.problems = problems;
+    }
+
+    public Boolean getPublish() {
+        return publish;
+    }
+
+    public void setPublish(Boolean publish) {
+        this.publish = publish;
     }
 }

@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 /**
- * 题单题目关联表 Mapper 接口
+ * 题单条目数据访问接口。
  */
 public interface ProblemSetItemMapper extends BaseMapper<ProblemSetItem> {
 

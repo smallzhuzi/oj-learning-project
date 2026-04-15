@@ -4,36 +4,53 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * 平台无关的题目详情 DTO
- * 统一不同 OJ 平台（LeetCode、洛谷等）的题目信息格式
+ * OJ 题目详情数据传输对象。
  */
 public class OjProblemDetail {
 
-    /** 平台内部题目 ID（LeetCode: questionId / 洛谷: pid） */
+    /**
+     * 远程题目ID。
+     */
     private String questionId;
 
-    /** 前端展示的题号（LeetCode: "1" / 洛谷: "P1001"） */
+    /**
+     * 前端展示编号。
+     */
     private String frontendId;
 
-    /** 题目标题 */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 题目描述内容（LeetCode: HTML / 洛谷: Markdown） */
+    /**
+     * 内容。
+     */
     private String content;
 
-    /** 统一难度（Easy / Medium / Hard） */
+    /**
+     * 难度。
+     */
     private String difficulty;
 
-    /** 通过率（百分比，如 49.5） */
+    /**
+     * 通过率。
+     */
     private BigDecimal acceptanceRate;
 
-    /** 各语言代码模板（洛谷为空列表） */
+    /**
+     * 代码Snippets。
+     */
     private List<LeetCodeProblemDetail.CodeSnippet> codeSnippets;
 
-    /** 题目标签列表 */
+    /**
+     * 主题标签。
+     */
     private List<LeetCodeProblemDetail.TopicTag> topicTags;
 
-    /** 原始统计信息 JSON 字符串 */
+    /**
+     * 统计。
+     */
     private String stats;
 
     // ==================== Getter / Setter ====================

@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 代码草稿控制器
- * 支持自动保存和手动恢复用户的代码草稿
+ * 代码草稿相关接口控制器。
  */
 @RestController
 @RequestMapping("/api/drafts")
@@ -22,10 +21,9 @@ public class CodeDraftController {
     @Autowired
     private CodeDraftService codeDraftService;
 
-    /**
-     * 保存草稿（upsert）
-     * PUT /api/drafts
-     */
+/**
+ * 保存当前代码草稿。
+ */
     @PutMapping
     public Result<Void> save(@Valid @RequestBody SaveDraftDTO dto, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -34,10 +32,9 @@ public class CodeDraftController {
         return Result.ok();
     }
 
-    /**
-     * 获取某题所有语言的草稿
-     * GET /api/drafts/{problemSlug}
-     */
+/**
+ * 查询当前用户的代码草稿列表。
+ */
     @GetMapping("/{problemSlug}")
     public Result<List<CodeDraft>> getAll(
             @PathVariable String problemSlug,

@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 题单控制器
- * 提供题单 CRUD、快速组题、Dify 智能组题等接口
+ * 题单相关接口控制器。
  */
 @RestController
 @RequestMapping("/api/problem-sets")
@@ -27,10 +26,9 @@ public class ProblemSetController {
     @Autowired
     private ProblemSetService problemSetService;
 
-    /**
-     * 创建题单（手动选题）
-     * POST /api/problem-sets
-     */
+/**
+ * 手动创建题单。
+ */
     @PostMapping
     public Result<ProblemSet> create(@Valid @RequestBody CreateProblemSetDTO dto, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -39,10 +37,9 @@ public class ProblemSetController {
         return Result.ok(ps);
     }
 
-    /**
-     * 快速组题
-     * POST /api/problem-sets/quick-generate
-     */
+/**
+ * 快速生成题单。
+ */
     @PostMapping("/quick-generate")
     public Result<ProblemSet> quickGenerate(@Valid @RequestBody QuickGenerateDTO dto, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -51,10 +48,9 @@ public class ProblemSetController {
         return Result.ok(ps);
     }
 
-    /**
-     * 获取我的题单列表
-     * GET /api/problem-sets?pageNum=1&pageSize=20
-     */
+/**
+ * 分页查询我的题单。
+ */
     @GetMapping
     public Result<IPage<ProblemSet>> myList(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -65,10 +61,9 @@ public class ProblemSetController {
         return Result.ok(page);
     }
 
-    /**
-     * 获取公开题单列表
-     * GET /api/problem-sets/public?pageNum=1&pageSize=20
-     */
+/**
+ * 分页查询公开题单。
+ */
     @GetMapping("/public")
     public Result<IPage<ProblemSet>> publicList(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -77,10 +72,9 @@ public class ProblemSetController {
         return Result.ok(page);
     }
 
-    /**
-     * 获取题单详情（含题目列表）
-     * GET /api/problem-sets/{id}
-     */
+/**
+ * 查询题单详情。
+ */
     @GetMapping("/{id}")
     public Result<ProblemSet> detail(@PathVariable Long id) {
         ProblemSet ps = problemSetService.getById(id);
@@ -88,20 +82,18 @@ public class ProblemSetController {
         return Result.ok(ps);
     }
 
-    /**
-     * 获取题单内所有题目详情
-     * GET /api/problem-sets/{id}/items
-     */
+/**
+ * 查询题单题目列表。
+ */
     @GetMapping("/{id}/items")
     public Result<List<ProblemSetItemDetailDTO>> items(@PathVariable Long id) {
         List<ProblemSetItemDetailDTO> items = problemSetService.getProblemSetItems(id);
         return Result.ok(items);
     }
 
-    /**
-     * 更新题单基本信息
-     * PUT /api/problem-sets/{id}
-     */
+/**
+ * 更新题单信息。
+ */
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody CreateProblemSetDTO dto, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -110,10 +102,9 @@ public class ProblemSetController {
         return Result.ok();
     }
 
-    /**
-     * 删除题单
-     * DELETE /api/problem-sets/{id}
-     */
+/**
+ * 删除题单。
+ */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -121,10 +112,9 @@ public class ProblemSetController {
         return Result.ok();
     }
 
-    /**
-     * 向题单添加题目
-     * POST /api/problem-sets/{id}/items
-     */
+/**
+ * 向题单添加题目。
+ */
     @PostMapping("/{id}/items")
     public Result<Void> addItem(
             @PathVariable Long id,
@@ -136,10 +126,9 @@ public class ProblemSetController {
         return Result.ok();
     }
 
-    /**
-     * 从题单移除题目
-     * DELETE /api/problem-sets/{id}/items/{itemId}
-     */
+/**
+ * 从题单移除题目。
+ */
     @DeleteMapping("/{id}/items/{itemId}")
     public Result<Void> removeItem(@PathVariable Long id, @PathVariable Long itemId, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -147,10 +136,9 @@ public class ProblemSetController {
         return Result.ok();
     }
 
-    /**
-     * 调整题单内题目顺序
-     * PUT /api/problem-sets/{id}/items/reorder
-     */
+/**
+ * 调整题单题目顺序。
+ */
     @PutMapping("/{id}/items/reorder")
     public Result<Void> reorder(@PathVariable Long id, @RequestBody List<Long> itemIds, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");

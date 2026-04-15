@@ -5,35 +5,44 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 练习会话表实体类
- * 对应数据库表：practice_sessions
- * 每次从题库首页进入做题页面时创建一个新会话，
- * 会话绑定 Dify 对话 ID，追踪用户完整学习路径
+ * 练习会话实体类。
  */
 @TableName("practice_sessions")
 public class PracticeSession implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 会话唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 用户 ID（关联 users.id） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** Dify 对话 ID（首次与 Dify 交互时由 Dify 返回并绑定） */
+    /**
+     * Dify 会话标识。
+     */
     private String difyConversationId;
 
-    /** 会话开始时间 */
+    /**
+     * 开始时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime startedAt;
 
-    /** 最后活跃时间（用于排序） */
+    /**
+     * 最后活跃时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime lastActiveAt;
 
-    /** 会话结束时间（用户关闭页面或手动结束时更新） */
+    /**
+     * 结束时间。
+     */
     private LocalDateTime endedAt;
 
     // ==================== Getter / Setter ====================

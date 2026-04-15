@@ -1,38 +1,53 @@
 package com.ojplatform.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 用户表实体类
- * 对应数据库表：users
+ * 用户实体类。
  */
 @TableName("users")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 用户唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 用户名（登录名，不可重复） */
+    /**
+     * 用户名。
+     */
     private String username;
 
-    /** 用户邮箱（不可重复，用于找回密码等） */
+    /**
+     * 邮箱。
+     */
     private String email;
 
-    /** 加密后的密码（BCrypt） */
+    /**
+     * 密码。
+     */
+    @JsonIgnore
     private String password;
 
-    /** 用户角色（user / admin） */
+    /**
+     * 角色。
+     */
     private String role;
 
-    /** 账号状态（active / disabled） */
+    /**
+     * 状态。
+     */
     private String status;
 
-    /** 注册时间 */
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 

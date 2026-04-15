@@ -5,33 +5,48 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 代码草稿实体类
- * 对应数据库表：code_drafts
- * 保存用户在做题过程中的代码草稿，支持自动保存和跨设备恢复
+ * 代码草稿实体类。
  */
 @TableName("code_drafts")
 public class CodeDraft implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 用户 ID */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 题目 slug */
+    /**
+     * 题目标识。
+     */
     private String problemSlug;
 
-    /** 编程语言（java / python3 / cpp） */
+    /**
+     * 编程语言。
+     */
     private String language;
 
-    /** 用户草稿代码 */
+    /**
+     * 代码内容。
+     */
     private String code;
 
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

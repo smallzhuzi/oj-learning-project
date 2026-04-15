@@ -5,37 +5,42 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 会话题目关联表实体类
- * 对应数据库表：session_problems
- * 记录每个练习会话中用户经历的题目轨迹，
- * 通过 jumpType 区分进入方式，通过 seqOrder 保持题目顺序
+ * 会话题目实体类。
  */
 @TableName("session_problems")
 public class SessionProblem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 关联记录唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 会话 ID（关联 practice_sessions.id） */
+    /**
+     * 会话ID。
+     */
     private Long sessionId;
 
-    /** 题目 ID（关联 problems.id） */
+    /**
+     * 题目ID。
+     */
     private Long problemId;
 
     /**
-     * 跳转类型枚举：
-     * - initial：用户从题库首页直接点击进入
-     * - next_recommend：Dify AI 推荐的下一题跳转
+     * 跳转类型。
      */
     private String jumpType;
 
-    /** 题目在会话中的顺序编号（从 1 开始递增） */
+    /**
+     * 顺序号。
+     */
     private Integer seqOrder;
 
-    /** 跳转时间 */
+    /**
+     * 跳转时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime jumpedAt;
 

@@ -10,7 +10,7 @@ import com.ojplatform.entity.SessionProblem;
 import java.util.List;
 
 /**
- * 练习会话服务接口
+ * 练习会话相关业务接口。
  */
 public interface PracticeSessionService extends IService<PracticeSession> {
 

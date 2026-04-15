@@ -3,45 +3,74 @@ package com.ojplatform.dto;
 import java.util.List;
 
 /**
- * LeetCode 题目详情 DTO
+ * 力扣题目详情数据传输对象。
  */
 public class LeetCodeProblemDetail {
 
-    /** LeetCode 内部题目 ID */
+    /**
+     * 远程题目ID。
+     */
     private String questionId;
 
-    /** 前端展示题号 */
+    /**
+     * 题目前端 ID。
+     */
     private String questionFrontendId;
 
-    /** 英文标题 */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 中文标题 */
+    /**
+     * 翻译标题。
+     */
     private String translatedTitle;
 
-    /** 中文题面 HTML */
+    /**
+     * 翻译内容。
+     */
     private String translatedContent;
 
-    /** 难度 */
+    /**
+     * 难度。
+     */
     private String difficulty;
 
-    /** 统计信息 JSON */
+    /**
+     * 统计。
+     */
     private String stats;
 
-    /** 各语言初始代码 */
+    /**
+     * 代码Snippets。
+     */
     private List<CodeSnippet> codeSnippets;
 
-    /** 题目标签列表 */
+    /**
+     * 主题标签。
+     */
     private List<TopicTag> topicTags;
 
+    /**
+     * 主题标签数据传输对象。
+     */
     public static class TopicTag {
-        /** 平台原始标签 ID */
+        /**
+         * 唯一标识。
+         */
         private String id;
-        /** 标签显示名 */
+        /**
+         * 名称。
+         */
         private String name;
-        /** 标签 slug */
+        /**
+         * 题目标识。
+         */
         private String slug;
-        /** 平台原始标签类型，例如洛谷的 1..6 */
+        /**
+         * 类型。
+         */
         private Integer type;
 
         public String getId() {
@@ -77,12 +106,21 @@ public class LeetCodeProblemDetail {
         }
     }
 
+    /**
+     * 代码Snippet数据传输对象。
+     */
     public static class CodeSnippet {
-        /** 语言显示名 */
+        /**
+         * 语言。
+         */
         private String lang;
-        /** 语言 slug */
+        /**
+         * 语言标识。
+         */
         private String langSlug;
-        /** 初始代码模板 */
+        /**
+         * 代码内容。
+         */
         private String code;
 
         public String getLang() {

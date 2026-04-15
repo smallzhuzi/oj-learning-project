@@ -8,7 +8,7 @@ import com.ojplatform.dto.ProblemQueryDTO;
 import com.ojplatform.entity.Problem;
 
 /**
- * 题目服务接口
+ * 题目相关业务接口。
  */
 public interface ProblemService extends IService<Problem> {
 

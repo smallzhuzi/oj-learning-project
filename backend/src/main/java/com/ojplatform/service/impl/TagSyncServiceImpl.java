@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * 标签同步相关业务实现。
+ */
 @Service
 public class TagSyncServiceImpl implements TagSyncService {
 

@@ -1,8 +1,7 @@
 package com.ojplatform.common;
 
 /**
- * 统一 API 响应包装类
- * 所有 Controller 接口统一返回此格式
+ * 统一返回体公共组件。
  */
 public class Result<T> {
 

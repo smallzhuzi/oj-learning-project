@@ -1,24 +1,33 @@
 package com.ojplatform.dto;
 
 /**
- * Dify 聊天响应 DTO
- * 封装 Dify API 返回的对话结果
+ * Dify 对话响应数据传输对象。
  */
 public class DifyChatResponse {
 
-    /** Dify 消息 ID */
+    /**
+     * 消息 ID。
+     */
     private String messageId;
 
-    /** Dify 对话 ID（首次对话由 Dify 生成，后续复用） */
+    /**
+     * 会话ID。
+     */
     private String conversationId;
 
-    /** AI 回复文本 */
+    /**
+     * 回答内容。
+     */
     private String answer;
 
-    /** 推荐的下一题 slug（仅 recommend_next 类型有值） */
+    /**
+     * 下一题目标识。
+     */
     private String nextProblemSlug;
 
-    /** 创建时间戳 */
+    /**
+     * 创建时间。
+     */
     private Long createdAt;
 
     // ==================== Getter / Setter ====================

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 用户个人中心控制器
+ * 用户资料相关接口控制器。
  */
 @RestController
 @RequestMapping("/api/user")
@@ -28,10 +28,9 @@ public class UserProfileController {
     @Autowired
     private UserOjConfigService userOjConfigService;
 
-    /**
-     * 修改个人资料
-     * PUT /api/user/profile
-     */
+/**
+ * 更新当前用户基础资料。
+ */
     @PutMapping("/profile")
     public Result<String> updateProfile(HttpServletRequest request,
                                         @Valid @RequestBody UpdateProfileDTO dto) {
@@ -40,10 +39,9 @@ public class UserProfileController {
         return Result.ok("修改成功");
     }
 
-    /**
-     * 修改密码
-     * PUT /api/user/password
-     */
+/**
+ * 修改当前用户密码。
+ */
     @PutMapping("/password")
     public Result<String> changePassword(HttpServletRequest request,
                                          @Valid @RequestBody ChangePasswordDTO dto) {
@@ -52,10 +50,9 @@ public class UserProfileController {
         return Result.ok("密码修改成功");
     }
 
-    /**
-     * 获取当前用户信息
-     * GET /api/user/info
-     */
+/**
+ * 查询当前用户信息。
+ */
     @GetMapping("/info")
     public Result<User> getUserInfo(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -63,20 +60,18 @@ public class UserProfileController {
         return Result.ok(user);
     }
 
-    /**
-     * 获取用户所有 OJ 配置
-     * GET /api/user/oj-configs
-     */
+/**
+ * 查询当前用户的 OJ 配置。
+ */
     @GetMapping("/oj-configs")
     public Result<List<UserOjConfig>> getOjConfigs(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return Result.ok(userOjConfigService.getUserConfigs(userId));
     }
 
-    /**
-     * 保存或更新 OJ 配置
-     * PUT /api/user/oj-config
-     */
+/**
+ * 保存当前用户的 OJ 配置。
+ */
     @PutMapping("/oj-config")
     public Result<String> saveOjConfig(HttpServletRequest request,
                                        @Valid @RequestBody UserOjConfigDTO dto) {

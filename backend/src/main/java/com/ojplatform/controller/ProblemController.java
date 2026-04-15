@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 题目控制器
- * 提供题目列表查询、题目详情获取、远程同步等接口
+ * 题目相关接口控制器。
  */
 @RestController
 @RequestMapping("/api/problems")
@@ -33,12 +32,9 @@ public class ProblemController {
     @Autowired
     private ProblemTagFacadeService problemTagFacadeService;
 
-    /**
-     * 分页查询题目列表
-     * 支持按关键词搜索（题号/标题）和难度筛选
-     *
-     * GET /api/problems?keyword=两数&difficulty=Easy&pageNum=1&pageSize=20
-     */
+/**
+ * 分页查询题目列表。
+ */
     @GetMapping
     public Result<IPage<ProblemDTO>> list(ProblemQueryDTO queryDTO) {
         IPage<Problem> page = problemService.queryProblems(queryDTO);
@@ -51,6 +47,9 @@ public class ProblemController {
         return Result.ok(dtoPage);
     }
 
+/**
+ * 分页查询题目标签选项。
+ */
     @GetMapping("/tags")
     public Result<Page<ProblemTagOptionDTO>> searchTags(
             @RequestParam(defaultValue = "leetcode") String ojPlatform,
@@ -60,11 +59,9 @@ public class ProblemController {
         return Result.ok(problemService.searchTagOptions(ojPlatform, keyword, pageNum, pageSize));
     }
 
-    /**
-     * 根据 slug 获取题目详情
-     *
-     * GET /api/problems/{slug}?ojPlatform=leetcode
-     */
+/**
+ * 查询题目详情。
+ */
     @GetMapping("/{slug}")
     public Result<ProblemDTO> detail(
             @PathVariable String slug,
@@ -76,12 +73,9 @@ public class ProblemController {
         return Result.ok(ProblemDTO.fromProblem(problem, problemTagFacadeService.getUnifiedTags(problem)));
     }
 
-    /**
-     * 从远程 OJ 同步题目列表到本地数据库
-     * 用于首次部署或题库更新时批量拉取题目基础信息
-     *
-     * POST /api/problems/sync?skip=0&limit=50&ojPlatform=leetcode
-     */
+/**
+ * 从远程平台同步题目数据。
+ */
     @PostMapping("/sync")
     public Result<Integer> syncFromRemote(
             @RequestParam(defaultValue = "0") int skip,

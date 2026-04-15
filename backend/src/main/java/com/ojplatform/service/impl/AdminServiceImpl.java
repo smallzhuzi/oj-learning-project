@@ -11,19 +11,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.Set;
 
 /**
- * 管理员服务实现
+ * 管理相关业务实现。
  */
 @Service
 public class AdminServiceImpl implements AdminService {
 
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final Set<String> ALLOWED_ROLES = Set.of("user", "admin");
 
     @Autowired
     private UserMapper userMapper;
 
+/**
+ * 分页查询后台用户。
+ */
     @Override
     public IPage<User> getUserList(int page, int size, String keyword) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
@@ -41,6 +47,9 @@ public class AdminServiceImpl implements AdminService {
         return result;
     }
 
+/**
+ * 切换用户启用状态。
+ */
     @Override
     public void toggleUserStatus(Long userId) {
         User user = userMapper.selectById(userId);
@@ -51,6 +60,9 @@ public class AdminServiceImpl implements AdminService {
         userMapper.updateById(user);
     }
 
+/**
+ * 重置用户密码并返回新密码。
+ */
     @Override
     public String resetUserPassword(Long userId) {
         User user = userMapper.selectById(userId);
@@ -59,10 +71,9 @@ public class AdminServiceImpl implements AdminService {
         }
         // 生成随机 8 位密码
         String chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-        Random random = new Random();
         StringBuilder sb = new StringBuilder(8);
         for (int i = 0; i < 8; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
+            sb.append(chars.charAt(SECURE_RANDOM.nextInt(chars.length())));
         }
         String newPassword = sb.toString();
 
@@ -71,6 +82,9 @@ public class AdminServiceImpl implements AdminService {
         return newPassword;
     }
 
+/**
+ * 删除后台用户。
+ */
     @Override
     public void deleteUser(Long userId) {
         User user = userMapper.selectById(userId);
@@ -83,6 +97,9 @@ public class AdminServiceImpl implements AdminService {
         userMapper.deleteById(userId);
     }
 
+/**
+ * 创建后台账号。
+ */
     @Override
     public void createUser(AdminCreateUserDTO dto) {
         // 检查用户名唯一
@@ -101,8 +118,13 @@ public class AdminServiceImpl implements AdminService {
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
+        String role = dto.getRole() != null ? dto.getRole().trim() : "user";
+        if (!ALLOWED_ROLES.contains(role)) {
+            throw new RuntimeException("角色不合法");
+        }
+
         user.setPassword(PASSWORD_ENCODER.encode(dto.getPassword()));
-        user.setRole(dto.getRole() != null ? dto.getRole() : "user");
+        user.setRole(role);
         userMapper.insert(user);
     }
 }

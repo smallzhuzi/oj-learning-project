@@ -13,9 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 洛谷 API 配置类
- * 绑定 application.yml 中 luogu 配置段
- * 注册独立的 OkHttpClient（带 CookieJar，统一管理所有 Cookie）
+ * 洛谷配置类。
  */
 @Configuration
 @ConfigurationProperties(prefix = "luogu")

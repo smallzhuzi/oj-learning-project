@@ -5,34 +5,53 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 用户 OJ 平台配置表实体类
- * 对应数据库表：user_oj_configs
+ * 用户 OJ 配置实体类。
  */
 @TableName("user_oj_configs")
 public class UserOjConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** OJ 平台标识（leetcode / luogu） */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
 
-    /** Cookie 值 */
+    /**
+     * Cookie 内容。
+     */
     private String cookieValue;
 
-    /** CSRF Token */
+    /**
+     * CSRF 令牌。
+     */
     private String csrfToken;
 
-    /** 额外配置（JSON） */
+    /**
+     * 额外配置。
+     */
     private String extraConfig;
 
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

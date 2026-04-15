@@ -13,7 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * 用户服务实现类
+ * 用户相关业务实现。
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
@@ -26,6 +26,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private EmailService emailService;
 
+/**
+ * 注册用户并返回登录态。
+ */
     @Override
     public LoginResponse register(RegisterDTO dto) {
         // 校验邮箱验证码
@@ -59,6 +62,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return new LoginResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole());
     }
 
+/**
+ * 校验账号密码并返回登录态。
+ */
     @Override
     public LoginResponse login(LoginDTO dto) {
         // 根据用户名查询
@@ -83,6 +89,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return new LoginResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole());
     }
 
+/**
+ * 读取当前登录用户。
+ */
     @Override
     public User getCurrentUser(Long userId) {
         User user = getById(userId);
@@ -92,6 +101,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return user;
     }
 
+/**
+ * 按邮箱重置用户密码。
+ */
     @Override
     public void resetPassword(String email, String newPassword) {
         User user = getOne(new LambdaQueryWrapper<User>()
@@ -103,6 +115,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         updateById(user);
     }
 
+/**
+ * 更新用户基础资料。
+ */
     @Override
     public void updateProfile(Long userId, UpdateProfileDTO dto) {
         User user = getById(userId);
@@ -128,6 +143,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         updateById(user);
     }
 
+/**
+ * 校验旧密码后修改新密码。
+ */
     @Override
     public void changePassword(Long userId, ChangePasswordDTO dto) {
         User user = getById(userId);

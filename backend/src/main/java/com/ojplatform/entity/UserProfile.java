@@ -7,59 +7,85 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 用户画像表实体类
- * 对应数据库表：user_profiles
- * 记录用户的能力水平、做题偏好、薄弱项等
+ * 用户画像实体类。
  */
 @TableName("user_profiles")
 public class UserProfile implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 画像唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 用户 ID */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 自评水平：beginner / intermediate / advanced / expert */
+    /**
+     * 技能等级。
+     */
     private String skillLevel;
 
-    /** 目标水平 */
+    /**
+     * 目标等级。
+     */
     private String targetLevel;
 
-    /** 擅长领域 JSON 数组 */
+    /**
+     * 擅长标签。
+     */
     @JsonRawValue
     private String strongTags;
 
-    /** 薄弱领域 JSON 数组 */
+    /**
+     * 薄弱标签。
+     */
     @JsonRawValue
     private String weakTags;
 
-    /** 已解决 Easy 题目数 */
+    /**
+     * 简单题通过数。
+     */
     private Integer solvedEasy;
 
-    /** 已解决 Medium 题目数 */
+    /**
+     * 中等题通过数。
+     */
     private Integer solvedMedium;
 
-    /** 已解决 Hard 题目数 */
+    /**
+     * 困难题通过数。
+     */
     private Integer solvedHard;
 
-    /** 总提交次数 */
+    /**
+     * 总Submissions。
+     */
     private Integer totalSubmissions;
 
-    /** 个人通过率 */
+    /**
+     * 通过率。
+     */
     private BigDecimal acceptanceRate;
 
-    /** 上次画像分析时间 */
+    /**
+     * 上次分析时间。
+     */
     private LocalDateTime lastAnalyzedAt;
 
-    /** 创建时间 */
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    /** 更新时间 */
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

@@ -3,34 +3,58 @@ package com.ojplatform.dto;
 import java.util.List;
 
 /**
- * 榜单响应 DTO
- * 包含榜单行列表 + 是否处于封榜状态
+ * 榜单数据传输对象。
  */
 public class StandingDTO {
 
-    /** 比赛 ID */
+    /**
+     * 比赛ID。
+     */
     private Long contestId;
 
-    /** 计分规则 */
+    /**
+     * 计分规则。
+     */
     private String scoringRule;
 
-    /** 是否已封榜 */
+    /**
+     * 是否封榜隐藏。
+     */
     private Boolean frozen;
 
-    /** 题目列表（按顺序，用于表头显示） */
+    /**
+     * 题目列表。
+     */
     private List<StandingProblem> problems;
 
-    /** 榜单行列表（已按排名排序） */
+    /**
+     * 榜单行列表。
+     */
     private List<StandingRow> rows;
 
     /**
-     * 榜单中的题目信息
+     * 榜单题目信息数据传输对象。
      */
     public static class StandingProblem {
+        /**
+         * 题目ID。
+         */
         private Long problemId;
+        /**
+         * 题目标识。
+         */
         private String slug;
+        /**
+         * 标题。
+         */
         private String title;
+        /**
+         * 前端展示编号。
+         */
         private String frontendId;
+        /**
+         * 分数。
+         */
         private Integer score;
 
         public Long getProblemId() {
@@ -75,17 +99,44 @@ public class StandingDTO {
     }
 
     /**
-     * 榜单一行（一个用户/队伍的成绩）
+     * 榜单行数据传输对象。
      */
     public static class StandingRow {
+        /**
+         * 排名。
+         */
         private Integer rank;
+        /**
+         * 用户ID。
+         */
         private Long userId;
+        /**
+         * 用户名。
+         */
         private String username;
+        /**
+         * 队伍ID。
+         */
         private Long teamId;
+        /**
+         * 队伍名称。
+         */
         private String teamName;
+        /**
+         * 通过题数。
+         */
         private Integer solvedCount;
+        /**
+         * 总分。
+         */
         private Integer totalScore;
+        /**
+         * 总罚时。
+         */
         private Long totalPenalty;
+        /**
+         * 各题结果。
+         */
         private List<ProblemResult> problemResults;
 
         public Integer getRank() {
@@ -162,14 +213,32 @@ public class StandingDTO {
     }
 
     /**
-     * 某用户/队伍在某题上的作答结果
+     * 题目结果数据传输对象。
      */
     public static class ProblemResult {
+        /**
+         * 题目ID。
+         */
         private Long problemId;
+        /**
+         * 是否通过。
+         */
         private Boolean accepted;
+        /**
+         * 尝试次数。
+         */
         private Integer attempts;
+        /**
+         * 首次通过时间（秒）。
+         */
         private Long firstAcTimeSeconds;
+        /**
+         * 分数。
+         */
         private Integer score;
+        /**
+         * 是否封榜隐藏。
+         */
         private Boolean frozen;
 
         public Long getProblemId() {

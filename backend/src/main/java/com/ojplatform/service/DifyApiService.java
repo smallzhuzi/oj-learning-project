@@ -8,9 +8,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Dify Chatflow API 调用服务接口
- * 封装所有与 Dify 的 HTTP 交互
- * 所有方法支持流式回调：onChunk 接收每个文本片段，为 null 时降级为阻塞模式
+ * Dify 接口相关业务接口。
  */
 public interface DifyApiService {
 

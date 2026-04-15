@@ -1,12 +1,21 @@
 package com.ojplatform.dto;
 
 /**
- * 题库标签搜索候选项
+ * 题目标签选项数据传输对象。
  */
 public class ProblemTagOptionDTO {
 
+    /**
+     * 键。
+     */
     private String key;
+    /**
+     * 标签名称。
+     */
     private String label;
+    /**
+     * 类型。
+     */
     private String type;
 
     public String getKey() {

@@ -15,7 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * 题目标签统一组装服务实现
+ * 题目标签门面相关业务实现。
  */
 @Service
 public class ProblemTagFacadeServiceImpl implements ProblemTagFacadeService {

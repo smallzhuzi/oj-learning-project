@@ -8,6 +8,7 @@ import com.ojplatform.dto.*;
 import com.ojplatform.entity.*;
 import com.ojplatform.mapper.*;
 import com.ojplatform.service.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 比赛服务实现类
- * 负责比赛全生命周期管理：创建、报名、组队、提交、榜单计算、封榜
+ * 比赛相关业务实现。
  */
 @Service
 public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> implements ContestService {
@@ -38,20 +38,29 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
     @Autowired
     private ContestSubmissionMapper contestSubmissionMapper;
     @Autowired
-    private ContestStandingMapper standingMapper;
-    @Autowired
     private ProblemSetService problemSetService;
     @Autowired
     private ProblemSetItemMapper problemSetItemMapper;
     @Autowired
     private ProblemService problemService;
     @Autowired
-    private OjApiServiceFactory ojApiServiceFactory;
+    private ContestJudgeQueueService contestJudgeQueueService;
     @Autowired
     private UserMapper userMapper;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private com.ojplatform.mapper.TeamMapper independentTeamMapper;
+    @Autowired
+    private com.ojplatform.mapper.TeamMemberMapper independentTeamMemberMapper;
+    @Autowired
+    private com.ojplatform.mapper.ContestTeamParticipantMapper participantMapper;
+    @Autowired
+    private ContestStandingSnapshotService contestStandingSnapshotService;
 
+    /**
+     * 创建比赛草稿，并在需要时直接发布。
+     */
     @Override
     @Transactional
     public Contest createContest(CreateContestDTO dto) {
@@ -68,6 +77,7 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         contest.setFreezeMinutes(dto.getFreezeMinutes());
         contest.setMaxParticipants(dto.getMaxParticipants());
         contest.setMaxTeamSize(dto.getMaxTeamSize());
+        contest.setMinTeamSize(dto.getMinTeamSize());
         contest.setScoringRule(dto.getScoringRule());
         contest.setPenaltyTime(dto.getPenaltyTime());
         contest.setIsPublic(dto.getIsPublic());
@@ -85,31 +95,18 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             }
         }
 
-        // 2. 处理题目来源
-        if ("existing_set".equals(dto.getProblemSource()) && dto.getProblemSetId() != null) {
-            contest.setProblemSetId(dto.getProblemSetId());
-        } else if ("manual".equals(dto.getProblemSource()) && dto.getProblems() != null && !dto.getProblems().isEmpty()) {
-            // 手动选题 → 自动创建题单
-            CreateProblemSetDTO psDto = new CreateProblemSetDTO();
-            psDto.setUserId(dto.getUserId());
-            psDto.setTitle(dto.getTitle() + " - 比赛题单");
-            psDto.setOjPlatform(dto.getOjPlatform());
-            List<CreateProblemSetDTO.ProblemItem> items = dto.getProblems().stream().map(cp -> {
-                CreateProblemSetDTO.ProblemItem pi = new CreateProblemSetDTO.ProblemItem();
-                pi.setSlug(cp.getSlug());
-                pi.setScore(cp.getScore());
-                return pi;
-            }).collect(Collectors.toList());
-            psDto.setProblems(items);
-            ProblemSet ps = problemSetService.createProblemSet(psDto);
-            ps.setVisibility("contest_only");
-            ps.setStatus("published");
-            problemSetService.updateById(ps);
-            contest.setProblemSetId(ps.getId());
-        }
+        // 2. 草稿阶段：只把题目列表存为 JSON，不创建题单
+        saveDraftProblems(contest, dto);
 
         baseMapper.insert(contest);
-        log.info("创建比赛：id={}, title={}, type={}", contest.getId(), contest.getTitle(), contest.getContestType());
+        log.info("创建比赛草稿：id={}, title={}", contest.getId(), contest.getTitle());
+
+        // 3. 如果要求直接发布，则立即发布
+        if (Boolean.TRUE.equals(dto.getPublish())) {
+            publishContest(contest.getId(), dto.getUserId());
+            contest = baseMapper.selectById(contest.getId());
+        }
+
         return contest;
     }
 
@@ -138,6 +135,7 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         if (dto.getFreezeMinutes() != null) contest.setFreezeMinutes(dto.getFreezeMinutes());
         if (dto.getMaxParticipants() != null) contest.setMaxParticipants(dto.getMaxParticipants());
         if (dto.getMaxTeamSize() != null) contest.setMaxTeamSize(dto.getMaxTeamSize());
+        if (dto.getMinTeamSize() != null) contest.setMinTeamSize(dto.getMinTeamSize());
         if (dto.getScoringRule() != null) contest.setScoringRule(dto.getScoringRule());
         if (dto.getPenaltyTime() != null) contest.setPenaltyTime(dto.getPenaltyTime());
         if (dto.getIsPublic() != null) contest.setIsPublic(dto.getIsPublic());
@@ -146,36 +144,16 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             try { contest.setAllowLanguage(objectMapper.writeValueAsString(dto.getAllowLanguage())); } catch (Exception ignored) {}
         }
 
-        // 更新题目（如果提供了新题目列表）
-        if (dto.getProblems() != null && !dto.getProblems().isEmpty()) {
-            // 创建新题单替换旧的
-            CreateProblemSetDTO psDto = new CreateProblemSetDTO();
-            psDto.setUserId(dto.getUserId());
-            psDto.setTitle(contest.getTitle() + " - 比赛题单");
-            psDto.setOjPlatform(dto.getOjPlatform() != null ? dto.getOjPlatform() : "leetcode");
-            List<CreateProblemSetDTO.ProblemItem> items = dto.getProblems().stream().map(cp -> {
-                CreateProblemSetDTO.ProblemItem pi = new CreateProblemSetDTO.ProblemItem();
-                pi.setSlug(cp.getSlug());
-                pi.setScore(cp.getScore());
-                return pi;
-            }).collect(Collectors.toList());
-            psDto.setProblems(items);
-            ProblemSet ps = problemSetService.createProblemSet(psDto);
-            ps.setVisibility("contest_only");
-            ps.setStatus("published");
-            problemSetService.updateById(ps);
-
-            // 删除旧题单（如果有）
-            if (contest.getProblemSetId() != null) {
-                try { problemSetService.removeById(contest.getProblemSetId()); } catch (Exception ignored) {}
-            }
-            contest.setProblemSetId(ps.getId());
-        } else if ("existing_set".equals(dto.getProblemSource()) && dto.getProblemSetId() != null) {
-            contest.setProblemSetId(dto.getProblemSetId());
-        }
+        // 草稿阶段：更新暂存题目列表（不创建题单）
+        saveDraftProblems(contest, dto);
 
         baseMapper.updateById(contest);
-        log.info("更新比赛：id={}", contestId);
+        log.info("更新比赛草稿：id={}", contestId);
+
+        // 如果要求直接发布，则立即发布
+        if (Boolean.TRUE.equals(dto.getPublish())) {
+            publishContest(contestId, dto.getUserId());
+        }
     }
 
     @Override
@@ -252,21 +230,51 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
     }
 
     @Override
+    @Transactional
     public void publishContest(Long contestId, Long userId) {
         Contest contest = baseMapper.selectById(contestId);
         if (contest == null) throw new RuntimeException("比赛不存在");
         if (!contest.getCreatorId().equals(userId)) throw new RuntimeException("无权操作");
         if (!"draft".equals(contest.getStatus())) throw new RuntimeException("只有草稿状态的比赛才能发布");
-        if (contest.getProblemSetId() == null) throw new RuntimeException("请先设置比赛题目");
 
+        // 从 draftProblems 解析题目列表
+        List<CreateContestDTO.ContestProblemItem> draftItems = parseDraftProblems(contest.getDraftProblems());
+        if (draftItems.isEmpty()) {
+            throw new RuntimeException("请先设置比赛题目");
+        }
+
+        // 创建正式题单
+        CreateProblemSetDTO psDto = new CreateProblemSetDTO();
+        psDto.setUserId(userId);
+        psDto.setTitle(contest.getTitle() + " - 比赛题单");
+        psDto.setOjPlatform(contest.getOjPlatform() != null ? contest.getOjPlatform() : "leetcode");
+        List<CreateProblemSetDTO.ProblemItem> items = draftItems.stream().map(cp -> {
+            CreateProblemSetDTO.ProblemItem pi = new CreateProblemSetDTO.ProblemItem();
+            pi.setSlug(cp.getSlug());
+            pi.setScore(cp.getScore());
+            return pi;
+        }).collect(Collectors.toList());
+        psDto.setProblems(items);
+        ProblemSet ps = problemSetService.createProblemSet(psDto);
+        ps.setVisibility("contest_only");
+        ps.setStatus("published");
+        problemSetService.updateById(ps);
+
+        // 删除旧题单（如果有）
+        if (contest.getProblemSetId() != null) {
+            try { problemSetService.removeById(contest.getProblemSetId()); } catch (Exception ignored) {}
+        }
+
+        contest.setProblemSetId(ps.getId());
+        contest.setDraftProblems(null);
         contest.setStatus("registering");
         baseMapper.updateById(contest);
-        log.info("比赛已发布：id={}", contestId);
+        log.info("比赛已发布：id={}, 题目数={}", contestId, draftItems.size());
     }
 
     @Override
     @Transactional
-    public void registerContest(Long contestId, Long userId, String password) {
+    public void registerContest(Long contestId, Long userId, String password, Long teamId, java.util.List<Long> memberUserIds) {
         Contest contest = baseMapper.selectById(contestId);
         if (contest == null) throw new RuntimeException("比赛不存在");
         refreshContestStatus(contestId);
@@ -283,19 +291,86 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             }
         }
 
-        // 检查人数限制
+        // 组队赛：用独立队伍报名 + 选出场成员
+        if ("team".equals(contest.getContestType())) {
+            if (teamId == null) throw new RuntimeException("组队赛需要选择一个队伍来报名");
+            if (memberUserIds == null || memberUserIds.isEmpty()) throw new RuntimeException("请选择出场成员");
+
+            com.ojplatform.entity.Team team = independentTeamMapper.selectById(teamId);
+            if (team == null) throw new RuntimeException("队伍不存在");
+            if (!team.getCaptainId().equals(userId)) throw new RuntimeException("只有队长可以代表队伍报名");
+
+            // 校验出场人数
+            int minSize = contest.getMinTeamSize() != null ? contest.getMinTeamSize() : 1;
+            int maxSize = contest.getMaxTeamSize() != null ? contest.getMaxTeamSize() : 99;
+            if (memberUserIds.size() < minSize) {
+                throw new RuntimeException("出场人数不足，至少需要 " + minSize + " 人");
+            }
+            if (memberUserIds.size() > maxSize) {
+                throw new RuntimeException("出场人数超出限制，最多 " + maxSize + " 人");
+            }
+
+            // 校验选中的成员是否都在队伍中
+            for (Long memberId : memberUserIds) {
+                Long exists = independentTeamMemberMapper.selectCount(
+                        new LambdaQueryWrapper<com.ojplatform.entity.TeamMember>()
+                                .eq(com.ojplatform.entity.TeamMember::getTeamId, teamId)
+                                .eq(com.ojplatform.entity.TeamMember::getUserId, memberId)
+                );
+                if (exists == 0) throw new RuntimeException("成员 " + memberId + " 不在队伍中");
+            }
+
+            // 检查队伍是否已报名
+            Long teamExists = registrationMapper.selectCount(
+                    new LambdaQueryWrapper<ContestRegistration>()
+                            .eq(ContestRegistration::getContestId, contestId)
+                            .eq(ContestRegistration::getTeamId, teamId)
+                            .eq(ContestRegistration::getStatus, "registered")
+            );
+            if (teamExists > 0) throw new RuntimeException("该队伍已报名该比赛");
+
+            // 检查名额限制
+            if (contest.getMaxParticipants() > 0) {
+                Long count = registrationMapper.selectCount(
+                        new LambdaQueryWrapper<ContestRegistration>()
+                                .eq(ContestRegistration::getContestId, contestId)
+                                .eq(ContestRegistration::getStatus, "registered")
+                );
+                if (count >= contest.getMaxParticipants()) throw new RuntimeException("报名名额已满");
+            }
+
+            // 写入报名记录
+            ContestRegistration reg = new ContestRegistration();
+            reg.setContestId(contestId);
+            reg.setUserId(userId);
+            reg.setTeamId(teamId);
+            reg.setStatus("registered");
+            registrationMapper.insert(reg);
+
+            // 写入出场成员
+            for (Long memberId : memberUserIds) {
+                com.ojplatform.entity.ContestTeamParticipant p = new com.ojplatform.entity.ContestTeamParticipant();
+                p.setContestId(contestId);
+                p.setTeamId(teamId);
+                p.setUserId(memberId);
+                participantMapper.insert(p);
+            }
+
+            log.info("队伍报名比赛：contestId={}, teamId={}, 出场{}人", contestId, teamId, memberUserIds.size());
+            return;
+        }
+
+        // 个人赛报名
+        // 检查名额限制
         if (contest.getMaxParticipants() > 0) {
             Long count = registrationMapper.selectCount(
                     new LambdaQueryWrapper<ContestRegistration>()
                             .eq(ContestRegistration::getContestId, contestId)
                             .eq(ContestRegistration::getStatus, "registered")
             );
-            if (count >= contest.getMaxParticipants()) {
-                throw new RuntimeException("报名人数已满");
-            }
+            if (count >= contest.getMaxParticipants()) throw new RuntimeException("报名名额已满");
         }
 
-        // 检查是否已报名
         Long exists = registrationMapper.selectCount(
                 new LambdaQueryWrapper<ContestRegistration>()
                         .eq(ContestRegistration::getContestId, contestId)
@@ -314,6 +389,31 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
 
     @Override
     public void cancelRegistration(Long contestId, Long userId) {
+        Contest contest = baseMapper.selectById(contestId);
+        if (contest == null) throw new RuntimeException("比赛不存在");
+
+        if ("team".equals(contest.getContestType())) {
+            // 查找该用户作为报名人的队伍报名记录
+            ContestRegistration teamReg = registrationMapper.selectOne(
+                    new LambdaQueryWrapper<ContestRegistration>()
+                            .eq(ContestRegistration::getContestId, contestId)
+                            .eq(ContestRegistration::getUserId, userId)
+                            .eq(ContestRegistration::getStatus, "registered")
+                            .isNotNull(ContestRegistration::getTeamId)
+            );
+            if (teamReg == null) throw new RuntimeException("你的队伍尚未报名该比赛");
+
+            // 验证是否为队长
+            com.ojplatform.entity.Team team = independentTeamMapper.selectById(teamReg.getTeamId());
+            if (team == null || !team.getCaptainId().equals(userId)) {
+                throw new RuntimeException("只有队长可以取消队伍报名");
+            }
+
+            teamReg.setStatus("cancelled");
+            registrationMapper.updateById(teamReg);
+            return;
+        }
+
         ContestRegistration reg = registrationMapper.selectOne(
                 new LambdaQueryWrapper<ContestRegistration>()
                         .eq(ContestRegistration::getContestId, contestId)
@@ -333,14 +433,17 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         if (contest == null) throw new RuntimeException("比赛不存在");
         if (!"team".equals(contest.getContestType())) throw new RuntimeException("非组队赛不能创建队伍");
 
-        // 生成邀请码
-        String inviteCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // 检查用户是否已在该比赛的其他队伍中
+        ContestTeam existingTeam = findUserTeam(contestId, dto.getUserId());
+        if (existingTeam != null) {
+            throw new RuntimeException("你已在该比赛的其他队伍中，请先退出后再创建");
+        }
 
         ContestTeam team = new ContestTeam();
         team.setContestId(contestId);
         team.setTeamName(dto.getTeamName());
+        team.setDescription(dto.getDescription());
         team.setCaptainId(dto.getUserId());
-        team.setInviteCode(inviteCode);
         team.setMemberCount(1);
         teamMapper.insert(team);
 
@@ -351,83 +454,8 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         member.setRole("captain");
         teamMemberMapper.insert(member);
 
-        // 自动报名比赛
-        Long regExists = registrationMapper.selectCount(
-                new LambdaQueryWrapper<ContestRegistration>()
-                        .eq(ContestRegistration::getContestId, contestId)
-                        .eq(ContestRegistration::getUserId, dto.getUserId())
-                        .eq(ContestRegistration::getStatus, "registered")
-        );
-        if (regExists == 0) {
-            ContestRegistration reg = new ContestRegistration();
-            reg.setContestId(contestId);
-            reg.setUserId(dto.getUserId());
-            reg.setTeamId(team.getId());
-            reg.setStatus("registered");
-            registrationMapper.insert(reg);
-        } else {
-            // 更新已有报名记录的 teamId
-            ContestRegistration reg = registrationMapper.selectOne(
-                    new LambdaQueryWrapper<ContestRegistration>()
-                            .eq(ContestRegistration::getContestId, contestId)
-                            .eq(ContestRegistration::getUserId, dto.getUserId())
-                            .eq(ContestRegistration::getStatus, "registered")
-            );
-            reg.setTeamId(team.getId());
-            registrationMapper.updateById(reg);
-        }
-
-        log.info("创建队伍：contestId={}, teamName={}, inviteCode={}", contestId, dto.getTeamName(), inviteCode);
+        log.info("创建队伍：contestId={}, teamName={}", contestId, dto.getTeamName());
         return team;
-    }
-
-    @Override
-    @Transactional
-    public void joinTeam(Long contestId, JoinTeamDTO dto) {
-        ContestTeam team = teamMapper.selectOne(
-                new LambdaQueryWrapper<ContestTeam>()
-                        .eq(ContestTeam::getContestId, contestId)
-                        .eq(ContestTeam::getInviteCode, dto.getInviteCode())
-        );
-        if (team == null) throw new RuntimeException("邀请码无效");
-
-        Contest contest = baseMapper.selectById(contestId);
-        if (team.getMemberCount() >= contest.getMaxTeamSize()) {
-            throw new RuntimeException("队伍已满（最多 " + contest.getMaxTeamSize() + " 人）");
-        }
-
-        // 检查是否已在队伍中
-        Long exists = teamMemberMapper.selectCount(
-                new LambdaQueryWrapper<ContestTeamMember>()
-                        .eq(ContestTeamMember::getTeamId, team.getId())
-                        .eq(ContestTeamMember::getUserId, dto.getUserId())
-        );
-        if (exists > 0) throw new RuntimeException("你已在该队伍中");
-
-        ContestTeamMember member = new ContestTeamMember();
-        member.setTeamId(team.getId());
-        member.setUserId(dto.getUserId());
-        member.setRole("member");
-        teamMemberMapper.insert(member);
-
-        team.setMemberCount(team.getMemberCount() + 1);
-        teamMapper.updateById(team);
-
-        // 自动报名
-        Long regExists = registrationMapper.selectCount(
-                new LambdaQueryWrapper<ContestRegistration>()
-                        .eq(ContestRegistration::getContestId, contestId)
-                        .eq(ContestRegistration::getUserId, dto.getUserId())
-                        .eq(ContestRegistration::getStatus, "registered")
-        );
-        if (regExists == 0) {
-            ContestRegistration reg = new ContestRegistration();
-            reg.setContestId(contestId);
-            reg.setUserId(dto.getUserId());
-            reg.setTeamId(team.getId());
-            reg.setStatus("registered");
-            registrationMapper.insert(reg);
-        }
     }
 
     @Override
@@ -435,7 +463,7 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
     public void leaveTeam(Long contestId, Long teamId, Long userId) {
         ContestTeam team = teamMapper.selectById(teamId);
         if (team == null) throw new RuntimeException("队伍不存在");
-        if (team.getCaptainId().equals(userId)) throw new RuntimeException("队长不能退出队伍，请先转让队长或解散队伍");
+        if (team.getCaptainId().equals(userId)) throw new RuntimeException("队长不能直接退出队伍，请先转让队长或解散队伍");
 
         teamMemberMapper.delete(
                 new LambdaQueryWrapper<ContestTeamMember>()
@@ -444,19 +472,204 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         );
         team.setMemberCount(team.getMemberCount() - 1);
         teamMapper.updateById(team);
+        clearRegistrationTeam(contestId, userId);
     }
 
     @Override
-    public List<ContestTeam> getTeams(Long contestId) {
+    public List<ContestTeamLobbyDTO> getTeams(Long contestId) {
+        Contest contest = baseMapper.selectById(contestId);
+        if (contest == null) {
+            throw new RuntimeException("比赛不存在");
+        }
+
         return teamMapper.selectList(
                 new LambdaQueryWrapper<ContestTeam>()
                         .eq(ContestTeam::getContestId, contestId)
                         .orderByAsc(ContestTeam::getCreatedAt)
+        ).stream().map(team -> {
+            ContestTeamLobbyDTO dto = new ContestTeamLobbyDTO();
+            dto.setId(team.getId());
+            dto.setContestId(team.getContestId());
+            dto.setTeamName(team.getTeamName());
+            dto.setDescription(team.getDescription());
+            dto.setCaptainId(team.getCaptainId());
+            dto.setMemberCount(team.getMemberCount());
+            dto.setRegistered(isTeamRegistered(contestId, team.getId()));
+            dto.setCreatedAt(team.getCreatedAt());
+
+            User captain = userMapper.selectById(team.getCaptainId());
+            dto.setCaptainName(captain != null ? captain.getUsername() : "未知队长");
+
+            // 填充成员用户名列表
+            List<ContestTeamMember> members = teamMemberMapper.selectList(
+                    new LambdaQueryWrapper<ContestTeamMember>()
+                            .eq(ContestTeamMember::getTeamId, team.getId())
+                            .orderByAsc(ContestTeamMember::getJoinedAt)
+            );
+            List<String> memberNames = members.stream().map(m -> {
+                User u = userMapper.selectById(m.getUserId());
+                return u != null ? u.getUsername() : "未知用户";
+            }).collect(Collectors.toList());
+            dto.setMemberNames(memberNames);
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public ContestTeamDetailDTO getMyTeam(Long contestId, Long userId) {
+        ContestTeam team = findUserTeam(contestId, userId);
+        if (team == null) {
+            return null;
+        }
+        return buildTeamDetail(contestId, team.getId(), userId);
+    }
+
+    @Override
+    public List<MyTeamSummaryDTO> getMyTeams(Long userId) {
+        List<ContestTeamMember> memberships = teamMemberMapper.selectList(
+                new LambdaQueryWrapper<ContestTeamMember>()
+                        .eq(ContestTeamMember::getUserId, userId)
+                        .orderByDesc(ContestTeamMember::getJoinedAt)
         );
+        if (memberships.isEmpty()) {
+            return List.of();
+        }
+
+        List<MyTeamSummaryDTO> summaries = new ArrayList<>();
+        for (ContestTeamMember membership : memberships) {
+            ContestTeam team = teamMapper.selectById(membership.getTeamId());
+            if (team == null) {
+                continue;
+            }
+
+            Contest contest = baseMapper.selectById(team.getContestId());
+            if (contest == null || !"team".equals(contest.getContestType())) {
+                continue;
+            }
+            refreshContestStatus(contest.getId());
+            contest = baseMapper.selectById(contest.getId());
+
+            MyTeamSummaryDTO dto = new MyTeamSummaryDTO();
+            dto.setContestId(contest.getId());
+            dto.setContestTitle(contest.getTitle());
+            dto.setContestStatus(contest.getStatus());
+            dto.setTeamId(team.getId());
+            dto.setTeamName(team.getTeamName());
+            dto.setCaptain(team.getCaptainId().equals(userId));
+            dto.setRegistered(isTeamRegistered(contest.getId(), team.getId()));
+            dto.setMemberCount(team.getMemberCount());
+            dto.setMaxTeamSize(contest.getMaxTeamSize());
+            dto.setStartTime(contest.getStartTime());
+
+            User captain = userMapper.selectById(team.getCaptainId());
+            dto.setCaptainName(captain != null ? captain.getUsername() : "未知队长");
+            summaries.add(dto);
+        }
+        summaries.sort(Comparator.comparing(MyTeamSummaryDTO::getStartTime, Comparator.nullsLast(Comparator.reverseOrder())));
+        return summaries;
     }
 
     @Override
     @Transactional
+    public ContestTeamDetailDTO updateTeam(Long contestId, Long teamId, UpdateTeamDTO dto) {
+        ContestTeam team = requireCaptainAndEditable(contestId, teamId, dto.getUserId());
+        team.setTeamName(dto.getTeamName().trim());
+        if (dto.getDescription() != null) {
+            team.setDescription(dto.getDescription().trim().isEmpty() ? null : dto.getDescription().trim());
+        }
+        teamMapper.updateById(team);
+        return buildTeamDetail(contestId, teamId, dto.getUserId());
+    }
+
+    @Override
+    @Transactional
+    public void transferCaptain(Long contestId, Long teamId, TransferCaptainDTO dto) {
+        ContestTeam team = requireCaptainAndEditable(contestId, teamId, dto.getUserId());
+        ContestTeamMember targetMember = teamMemberMapper.selectOne(
+                new LambdaQueryWrapper<ContestTeamMember>()
+                        .eq(ContestTeamMember::getTeamId, teamId)
+                        .eq(ContestTeamMember::getUserId, dto.getTargetUserId())
+        );
+        if (targetMember == null) {
+            throw new RuntimeException("目标成员不在队伍中");
+        }
+        if (dto.getTargetUserId().equals(dto.getUserId())) {
+            throw new RuntimeException("无需转让给自己");
+        }
+
+        ContestTeamMember captainMember = teamMemberMapper.selectOne(
+                new LambdaQueryWrapper<ContestTeamMember>()
+                        .eq(ContestTeamMember::getTeamId, teamId)
+                        .eq(ContestTeamMember::getUserId, dto.getUserId())
+        );
+        captainMember.setRole("member");
+        targetMember.setRole("captain");
+        teamMemberMapper.updateById(captainMember);
+        teamMemberMapper.updateById(targetMember);
+
+        team.setCaptainId(dto.getTargetUserId());
+        teamMapper.updateById(team);
+
+        ContestRegistration teamReg = registrationMapper.selectOne(
+                new LambdaQueryWrapper<ContestRegistration>()
+                        .eq(ContestRegistration::getContestId, contestId)
+                        .eq(ContestRegistration::getTeamId, teamId)
+                        .eq(ContestRegistration::getStatus, "registered")
+        );
+        if (teamReg != null) {
+            teamReg.setUserId(dto.getTargetUserId());
+            registrationMapper.updateById(teamReg);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeTeamMember(Long contestId, Long teamId, Long operatorUserId, Long targetUserId) {
+        ContestTeam team = requireCaptainAndEditable(contestId, teamId, operatorUserId);
+        if (operatorUserId.equals(targetUserId)) {
+            throw new RuntimeException("队长不能移除自己，请直接解散队伍或转让队长");
+        }
+
+        ContestTeamMember targetMember = teamMemberMapper.selectOne(
+                new LambdaQueryWrapper<ContestTeamMember>()
+                        .eq(ContestTeamMember::getTeamId, teamId)
+                        .eq(ContestTeamMember::getUserId, targetUserId)
+        );
+        if (targetMember == null) {
+            throw new RuntimeException("目标成员不在队伍中");
+        }
+
+        teamMemberMapper.deleteById(targetMember.getId());
+        team.setMemberCount(Math.max(0, team.getMemberCount() - 1));
+        teamMapper.updateById(team);
+        clearRegistrationTeam(contestId, targetUserId);
+    }
+
+    @Override
+    @Transactional
+    public void dissolveTeam(Long contestId, Long teamId, Long userId) {
+        requireCaptainAndEditable(contestId, teamId, userId);
+
+        ContestRegistration teamReg = registrationMapper.selectOne(
+                new LambdaQueryWrapper<ContestRegistration>()
+                        .eq(ContestRegistration::getContestId, contestId)
+                        .eq(ContestRegistration::getTeamId, teamId)
+                        .eq(ContestRegistration::getStatus, "registered")
+        );
+        if (teamReg != null) {
+            teamReg.setStatus("cancelled");
+            registrationMapper.updateById(teamReg);
+        }
+
+        teamMemberMapper.delete(new LambdaQueryWrapper<ContestTeamMember>().eq(ContestTeamMember::getTeamId, teamId));
+        teamMapper.deleteById(teamId);
+    }
+
+    /**
+     * 校验参赛资格后创建比赛提交，并把判题任务送入队列。
+     */
+    @Override
     public ContestSubmission submitCode(ContestSubmitDTO dto) {
         Contest contest = baseMapper.selectById(dto.getContestId());
         if (contest == null) throw new RuntimeException("比赛不存在");
@@ -467,14 +680,27 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             throw new RuntimeException("比赛未在进行中");
         }
 
-        // 验证报名
-        ContestRegistration reg = registrationMapper.selectOne(
-                new LambdaQueryWrapper<ContestRegistration>()
-                        .eq(ContestRegistration::getContestId, dto.getContestId())
-                        .eq(ContestRegistration::getUserId, dto.getUserId())
-                        .eq(ContestRegistration::getStatus, "registered")
-        );
-        if (reg == null) throw new RuntimeException("未报名该比赛");
+        ContestRegistration reg;
+        if ("team".equals(contest.getContestType())) {
+            ContestTeam myTeam = findUserTeam(dto.getContestId(), dto.getUserId());
+            if (myTeam == null) throw new RuntimeException("你当前不在该比赛的任何队伍中");
+
+            reg = registrationMapper.selectOne(
+                    new LambdaQueryWrapper<ContestRegistration>()
+                            .eq(ContestRegistration::getContestId, dto.getContestId())
+                            .eq(ContestRegistration::getTeamId, myTeam.getId())
+                            .eq(ContestRegistration::getStatus, "registered")
+            );
+            if (reg == null) throw new RuntimeException("你的队伍尚未完成比赛报名");
+        } else {
+            reg = registrationMapper.selectOne(
+                    new LambdaQueryWrapper<ContestRegistration>()
+                            .eq(ContestRegistration::getContestId, dto.getContestId())
+                            .eq(ContestRegistration::getUserId, dto.getUserId())
+                            .eq(ContestRegistration::getStatus, "registered")
+            );
+            if (reg == null) throw new RuntimeException("未报名该比赛");
+        }
 
         // 查找题目
         Problem problem = problemService.getBySlug(dto.getProblemSlug(), contest.getOjPlatform());
@@ -493,16 +719,16 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         contestSubmissionMapper.insert(cs);
 
         // 提交到远程 OJ
-        OjApiService apiService = ojApiServiceFactory.getService(contest.getOjPlatform());
-        String platformLang = apiService.mapLanguage(dto.getLanguage());
-        String remoteId = apiService.submitCode(
-                problem.getSlug(), problem.getQuestionId(), platformLang, dto.getCode()
-        );
-        cs.setRemoteSubmissionId(remoteId);
-        contestSubmissionMapper.updateById(cs);
+        try {
+            contestJudgeQueueService.enqueueSubmit(cs.getId());
+        } catch (RuntimeException e) {
+            cs.setStatus("Submit Failed");
+            contestSubmissionMapper.updateById(cs);
+            throw new RuntimeException("提交任务入队失败，请稍后重试");
+        }
 
-        log.info("比赛提交：contestId={}, userId={}, problemSlug={}, remoteId={}",
-                dto.getContestId(), dto.getUserId(), dto.getProblemSlug(), remoteId);
+        log.info("Contest submission queued. contestId={}, submissionId={}, userId={}, problemSlug={}",
+                dto.getContestId(), cs.getId(), dto.getUserId(), dto.getProblemSlug());
         return cs;
     }
 
@@ -511,44 +737,6 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         ContestSubmission cs = contestSubmissionMapper.selectById(submissionId);
         if (cs == null) throw new RuntimeException("提交记录不存在");
         if (!cs.getContestId().equals(contestId)) throw new RuntimeException("提交记录不属于该比赛");
-
-        if (cs.getRemoteSubmissionId() == null || !"Pending".equals(cs.getStatus())) {
-            return cs;
-        }
-
-        Contest contest = baseMapper.selectById(contestId);
-        OjApiService apiService = ojApiServiceFactory.getService(contest.getOjPlatform());
-        OjJudgeResult result = apiService.checkResult(cs.getRemoteSubmissionId());
-
-        if (result.isFinished()) {
-            cs.setStatus(result.getStatusMsg());
-            cs.setRuntime(result.getRuntime());
-            cs.setMemory(result.getMemory());
-            cs.setTotalCorrect(result.getTotalCorrect());
-            cs.setTotalTestcases(result.getTotalTestcases());
-
-            // OI 赛制计算分数
-            if ("oi".equals(contest.getScoringRule()) && result.getTotalTestcases() != null && result.getTotalTestcases() > 0) {
-                // 查找该题在题单中的满分
-                int fullScore = 100;
-                if (contest.getProblemSetId() != null) {
-                    List<ProblemSetItemDetailDTO> items = problemSetService.getProblemSetItems(contest.getProblemSetId());
-                    for (ProblemSetItemDetailDTO item : items) {
-                        if (item.getProblemId().equals(cs.getProblemId())) {
-                            fullScore = item.getScore();
-                            break;
-                        }
-                    }
-                }
-                int score = (int) Math.round((double) result.getTotalCorrect() / result.getTotalTestcases() * fullScore);
-                cs.setScore(score);
-            } else if ("Accepted".equals(result.getStatusMsg())) {
-                cs.setScore(100);
-            }
-
-            contestSubmissionMapper.updateById(cs);
-        }
-
         return cs;
     }
 
@@ -562,8 +750,13 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         );
     }
 
+    /**
+     * 比赛榜单统一从快照服务读取，避免每次请求全量扫描提交记录。
+     */
     @Override
     public StandingDTO getStandings(Long contestId, Long userId) {
+        return contestStandingSnapshotService.getStanding(contestId);
+        /*
         Contest contest = baseMapper.selectById(contestId);
         if (contest == null) throw new RuntimeException("比赛不存在");
 
@@ -707,6 +900,7 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
 
         standing.setRows(rows);
         return standing;
+        */
     }
 
     @Override
@@ -721,6 +915,7 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         contest.setStatus("ended");
         contest.setFreezeMinutes(0);
         baseMapper.updateById(contest);
+        contestStandingSnapshotService.rebuildContestSnapshot(contestId, false);
         log.info("比赛解封：id={}", contestId);
     }
 
@@ -746,6 +941,9 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         return problemSetService.getProblemSetItems(contest.getProblemSetId());
     }
 
+    /**
+     * 根据当前时间推进比赛状态，并在封榜或结束时刷新榜单快照。
+     */
     @Override
     public void refreshContestStatus(Long contestId) {
         Contest contest = baseMapper.selectById(contestId);
@@ -782,6 +980,11 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         if (!newStatus.equals(currentStatus)) {
             contest.setStatus(newStatus);
             baseMapper.updateById(contest);
+            if ("frozen".equals(newStatus)) {
+                contestStandingSnapshotService.rebuildContestSnapshot(contestId, true);
+            } else if ("ended".equals(newStatus)) {
+                contestStandingSnapshotService.rebuildContestSnapshot(contestId, false);
+            }
             log.info("比赛状态变更：id={}, {} → {}", contestId, currentStatus, newStatus);
         }
     }
@@ -803,6 +1006,7 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         dto.setPenaltyTime(contest.getPenaltyTime());
         dto.setMaxParticipants(contest.getMaxParticipants());
         dto.setMaxTeamSize(contest.getMaxTeamSize());
+        dto.setMinTeamSize(contest.getMinTeamSize());
         dto.setIsPublic(contest.getIsPublic());
         dto.setOjPlatform(contest.getOjPlatform());
         dto.setCreatedAt(contest.getCreatedAt());
@@ -832,20 +1036,32 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             ProblemSet ps = problemSetService.getById(contest.getProblemSetId());
             dto.setProblemCount(ps != null ? ps.getProblemCount() : 0);
         } else {
-            dto.setProblemCount(0);
+            // 草稿阶段：从 draftProblems 计算题目数
+            List<CreateContestDTO.ContestProblemItem> draftItems = parseDraftProblems(contest.getDraftProblems());
+            dto.setProblemCount(draftItems.size());
         }
 
         // 当前用户是否已报名
         if (userId != null) {
-            Long myReg = registrationMapper.selectCount(
-                    new LambdaQueryWrapper<ContestRegistration>()
-                            .eq(ContestRegistration::getContestId, contest.getId())
-                            .eq(ContestRegistration::getUserId, userId)
-                            .eq(ContestRegistration::getStatus, "registered")
-            );
-            dto.setRegistered(myReg > 0);
+            if ("team".equals(contest.getContestType())) {
+                ContestTeam myTeam = findUserTeam(contest.getId(), userId);
+                dto.setRegistered(myTeam != null && isTeamRegistered(contest.getId(), myTeam.getId()));
+            } else {
+                Long myReg = registrationMapper.selectCount(
+                        new LambdaQueryWrapper<ContestRegistration>()
+                                .eq(ContestRegistration::getContestId, contest.getId())
+                                .eq(ContestRegistration::getUserId, userId)
+                                .eq(ContestRegistration::getStatus, "registered")
+                );
+                dto.setRegistered(myReg > 0);
+            }
         } else {
             dto.setRegistered(false);
+        }
+
+        // 草稿题目（仅创建者 + 草稿态可见）
+        if ("draft".equals(contest.getStatus()) && contest.getCreatorId().equals(userId)) {
+            dto.setDraftProblems(contest.getDraftProblems());
         }
 
         return dto;
@@ -910,5 +1126,143 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             }
         }
         pr.setAttempts(attempts);
+    }
+
+    private ContestTeam findUserTeam(Long contestId, Long userId) {
+        ContestTeamMember membership = teamMemberMapper.selectOne(
+                new LambdaQueryWrapper<ContestTeamMember>()
+                        .inSql(ContestTeamMember::getTeamId, "select id from contest_teams where contest_id = " + contestId)
+                        .eq(ContestTeamMember::getUserId, userId)
+                        .last("limit 1")
+        );
+        return membership == null ? null : teamMapper.selectById(membership.getTeamId());
+    }
+
+    private boolean isTeamRegistered(Long contestId, Long teamId) {
+        return registrationMapper.selectCount(
+                new LambdaQueryWrapper<ContestRegistration>()
+                        .eq(ContestRegistration::getContestId, contestId)
+                        .eq(ContestRegistration::getTeamId, teamId)
+                        .eq(ContestRegistration::getStatus, "registered")
+        ) > 0;
+    }
+
+    private ContestTeam requireCaptainAndEditable(Long contestId, Long teamId, Long userId) {
+        Contest contest = baseMapper.selectById(contestId);
+        if (contest == null) {
+            throw new RuntimeException("比赛不存在");
+        }
+        refreshContestStatus(contestId);
+        contest = baseMapper.selectById(contestId);
+        if (!"registering".equals(contest.getStatus())) {
+            throw new RuntimeException("比赛开始后不允许调整队伍");
+        }
+
+        ContestTeam team = teamMapper.selectById(teamId);
+        if (team == null || !team.getContestId().equals(contestId)) {
+            throw new RuntimeException("队伍不存在");
+        }
+        if (!team.getCaptainId().equals(userId)) {
+            throw new RuntimeException("仅队长可执行该操作");
+        }
+        return team;
+    }
+
+    private ContestTeamDetailDTO buildTeamDetail(Long contestId, Long teamId, Long currentUserId) {
+        ContestTeam team = teamMapper.selectById(teamId);
+        if (team == null || !team.getContestId().equals(contestId)) {
+            throw new RuntimeException("队伍不存在");
+        }
+
+        List<ContestTeamMember> members = teamMemberMapper.selectList(
+                new LambdaQueryWrapper<ContestTeamMember>()
+                        .eq(ContestTeamMember::getTeamId, teamId)
+                        .orderByAsc(ContestTeamMember::getJoinedAt)
+        );
+
+        ContestTeamDetailDTO dto = new ContestTeamDetailDTO();
+        dto.setId(team.getId());
+        dto.setContestId(team.getContestId());
+        dto.setTeamName(team.getTeamName());
+        dto.setDescription(team.getDescription());
+        dto.setCaptainId(team.getCaptainId());
+        dto.setMemberCount(team.getMemberCount());
+        dto.setCreatedAt(team.getCreatedAt());
+        dto.setCaptain(team.getCaptainId().equals(currentUserId));
+
+        User captain = userMapper.selectById(team.getCaptainId());
+        dto.setCaptainName(captain != null ? captain.getUsername() : "未知用户");
+
+        List<ContestTeamMemberDTO> memberDTOs = new ArrayList<>();
+        for (ContestTeamMember member : members) {
+            ContestTeamMemberDTO memberDTO = new ContestTeamMemberDTO();
+            memberDTO.setUserId(member.getUserId());
+            memberDTO.setRole(member.getRole());
+            memberDTO.setJoinedAt(member.getJoinedAt());
+            User user = userMapper.selectById(member.getUserId());
+            memberDTO.setUsername(user != null ? user.getUsername() : "未知用户");
+            if (member.getUserId().equals(currentUserId)) {
+                dto.setMyRole(member.getRole());
+            }
+            memberDTOs.add(memberDTO);
+        }
+        dto.setMembers(memberDTOs);
+        return dto;
+    }
+
+    private void clearRegistrationTeam(Long contestId, Long userId) {
+        ContestRegistration reg = registrationMapper.selectOne(
+                new LambdaQueryWrapper<ContestRegistration>()
+                        .eq(ContestRegistration::getContestId, contestId)
+                        .eq(ContestRegistration::getUserId, userId)
+                        .eq(ContestRegistration::getStatus, "registered")
+        );
+        if (reg != null) {
+            reg.setTeamId(null);
+            registrationMapper.updateById(reg);
+        }
+    }
+
+    /**
+     * 将 DTO 中的题目列表序列化为 JSON 存入 draftProblems 字段
+     */
+    private void saveDraftProblems(Contest contest, CreateContestDTO dto) {
+        if (dto.getProblems() != null && !dto.getProblems().isEmpty()) {
+            try {
+                contest.setDraftProblems(objectMapper.writeValueAsString(dto.getProblems()));
+            } catch (Exception e) {
+                log.warn("序列化草稿题目失败", e);
+            }
+        } else if ("existing_set".equals(dto.getProblemSource()) && dto.getProblemSetId() != null) {
+            // 从已有题单导入：读取题单项目并存为 draftProblems
+            try {
+                List<ProblemSetItemDetailDTO> items = problemSetService.getProblemSetItems(dto.getProblemSetId());
+                List<CreateContestDTO.ContestProblemItem> draftItems = items.stream().map(item -> {
+                    CreateContestDTO.ContestProblemItem cp = new CreateContestDTO.ContestProblemItem();
+                    cp.setSlug(item.getSlug());
+                    cp.setScore(item.getScore());
+                    return cp;
+                }).collect(Collectors.toList());
+                contest.setDraftProblems(objectMapper.writeValueAsString(draftItems));
+            } catch (Exception e) {
+                log.warn("从题单导入草稿题目失败", e);
+            }
+        }
+    }
+
+    /**
+     * 解析 draftProblems JSON 为题目列表
+     */
+    private List<CreateContestDTO.ContestProblemItem> parseDraftProblems(String draftProblems) {
+        if (draftProblems == null || draftProblems.isBlank()) {
+            return List.of();
+        }
+        try {
+            return objectMapper.readValue(draftProblems,
+                    new TypeReference<List<CreateContestDTO.ContestProblemItem>>() {});
+        } catch (Exception e) {
+            log.warn("解析草稿题目失败", e);
+            return List.of();
+        }
     }
 }

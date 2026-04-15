@@ -7,8 +7,7 @@ import com.ojplatform.entity.Problem;
 import java.util.List;
 
 /**
- * LeetCode API 调用服务接口
- * 封装所有与 LeetCode CN 的 HTTP 交互
+ * 力扣接口相关业务接口。
  */
 public interface LeetCodeApiService {
 

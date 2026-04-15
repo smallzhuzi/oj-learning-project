@@ -3,20 +3,31 @@ package com.ojplatform.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * 保存代码草稿请求 DTO
+ * 保存草稿数据传输对象。
  */
 public class SaveDraftDTO {
 
+    /**
+     * 题目标识。
+     */
     @NotBlank(message = "题目 slug 不能为空")
     private String problemSlug;
 
+    /**
+     * 编程语言。
+     */
     @NotBlank(message = "编程语言不能为空")
     private String language;
 
+    /**
+     * 代码内容。
+     */
     @NotBlank(message = "代码不能为空")
     private String code;
 
-    /** 用户 ID（由后端从 JWT Token 中提取并设入） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
     // ==================== Getter / Setter ====================

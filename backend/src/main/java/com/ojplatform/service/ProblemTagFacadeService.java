@@ -6,7 +6,7 @@ import com.ojplatform.entity.Problem;
 import java.util.List;
 
 /**
- * 题目标签统一组装服务
+ * 题目标签门面相关业务接口。
  */
 public interface ProblemTagFacadeService {
 

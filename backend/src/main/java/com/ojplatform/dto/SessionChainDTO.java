@@ -3,33 +3,48 @@ package com.ojplatform.dto;
 import java.time.LocalDateTime;
 
 /**
- * 轨迹链概要 DTO
- * 用于侧边栏列表展示每条轨迹链的头题信息和题目数量
+ * 会话链路数据传输对象。
  */
 public class SessionChainDTO {
 
-    /** 会话 ID（即轨迹链 ID） */
+    /**
+     * 会话ID。
+     */
     private Long sessionId;
 
-    /** Dify 对话 ID */
+    /**
+     * Dify 会话标识。
+     */
     private String difyConversationId;
 
-    /** 会话开始时间 */
+    /**
+     * 开始时间。
+     */
     private LocalDateTime startedAt;
 
-    /** 头题 slug */
+    /**
+     * 头节点标识。
+     */
     private String headSlug;
 
-    /** 头题标题 */
+    /**
+     * 头节点标题。
+     */
     private String headTitle;
 
-    /** 头题题号 */
+    /**
+     * 头节点前端ID。
+     */
     private String headFrontendId;
 
-    /** 头题难度 */
+    /**
+     * 头节点难度。
+     */
     private String headDifficulty;
 
-    /** 链上题目总数 */
+    /**
+     * 题目数量。
+     */
     private Integer problemCount;
 
     // ==================== Getter / Setter ====================

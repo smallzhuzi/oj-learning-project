@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 /**
- * 会话题目关联表 Mapper 接口
+ * 会话题目数据访问接口。
  */
 public interface SessionProblemMapper extends BaseMapper<SessionProblem> {
 

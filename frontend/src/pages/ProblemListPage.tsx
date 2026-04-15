@@ -224,7 +224,6 @@ export default function ProblemListPage() {
               <option value="codeforces" disabled>Codeforces（即将支持）</option>
             </select>
 
-            <ThemeToggle />
           </div>
 
           {user && (
@@ -250,6 +249,7 @@ export default function ProblemListPage() {
                 <Trophy className="w-3.5 h-3.5" />
                 比赛
               </button>
+              <ThemeToggle />
               <UserMenu />
             </div>
           )}

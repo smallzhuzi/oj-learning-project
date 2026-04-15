@@ -1,29 +1,43 @@
 package com.ojplatform.dto;
 
 /**
- * 统一题目标签 DTO
- * 兼容旧前端的 name/slug 字段，同时提供新的 key/label/type 字段。
+ * 题目标签数据传输对象。
  */
 public class ProblemTagDTO {
 
+    /**
+     * 唯一标识。
+     */
     private Long id;
 
-    /** 统一标签 key，兼容旧字段语义 */
+    /**
+     * 键。
+     */
     private String key;
 
-    /** 标签显示名 */
+    /**
+     * 标签名称。
+     */
     private String label;
 
-    /** 标签类型，如 algorithm / data_structure / source */
+    /**
+     * 类型。
+     */
     private String type;
 
-    /** 平台原始标签名称 */
+    /**
+     * 来源Name。
+     */
     private String sourceName;
 
-    /** 平台原始标签 slug */
+    /**
+     * 来源标识。
+     */
     private String sourceSlug;
 
-    /** 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
 
     // ===== 兼容旧前端字段 =====

@@ -1,27 +1,38 @@
 package com.ojplatform.dto;
 
 /**
- * 平台无关的判题结果 DTO
- * 统一不同 OJ 平台的评测结果格式
+ * OJ 判题结果数据传输对象。
  */
 public class OjJudgeResult {
 
-    /** 判题是否完成 */
+    /**
+     * 是否完成。
+     */
     private boolean finished;
 
-    /** 结果描述（Accepted / Wrong Answer / Time Limit Exceeded 等） */
+    /**
+     * 状态Msg。
+     */
     private String statusMsg;
 
-    /** 运行耗时（如 "4 ms"） */
+    /**
+     * 运行耗时。
+     */
     private String runtime;
 
-    /** 内存消耗（如 "39.2 MB"） */
+    /**
+     * 内存消耗。
+     */
     private String memory;
 
-    /** 通过的测试用例数 */
+    /**
+     * 通过用例数。
+     */
     private Integer totalCorrect;
 
-    /** 总测试用例数 */
+    /**
+     * 总用例数。
+     */
     private Integer totalTestcases;
 
     // ==================== Getter / Setter ====================

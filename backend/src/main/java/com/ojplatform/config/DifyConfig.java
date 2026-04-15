@@ -4,9 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Dify Chatflow API 配置类
- * 绑定 application.yml 中 dify 配置段
- * OkHttpClient 复用 LeetCodeConfig 中注册的全局 Bean
+ * Dify配置类。
  */
 @Configuration
 @ConfigurationProperties(prefix = "dify")

@@ -25,8 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 用户画像服务实现类
- * 负责用户能力画像的创建、自评更新、自动分析
+ * 用户资料相关业务实现。
  */
 @Service
 public class UserProfileServiceImpl extends ServiceImpl<UserProfileMapper, UserProfile> implements UserProfileService {

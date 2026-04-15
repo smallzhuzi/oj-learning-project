@@ -7,56 +7,80 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 题目缓存表实体类
- * 对应数据库表：problems
- * 缓存从远程 OJ 拉取的题目信息，避免频繁请求远程接口
+ * 题目实体类。
  */
 @TableName("problems")
 public class Problem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 题目本地唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 题目 slug（如 two-sum），用于构造 URL 和 API 调用 */
+    /**
+     * 题目标识。
+     */
     private String slug;
 
-    /** 题目标题（如"两数之和"） */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 难度等级：Easy / Medium / Hard */
+    /**
+     * 难度。
+     */
     private String difficulty;
 
-    /** 通过率（百分比，如 49.50 表示 49.50%） */
+    /**
+     * 通过率。
+     */
     private BigDecimal acceptanceRate;
 
-    /** OJ 平台标识（leetcode / codeforces 等） */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
 
-    /** 题目描述（Markdown/HTML），从远程拉取后缓存 */
+    /**
+     * Markdown 格式内容。
+     */
     private String contentMarkdown;
 
-    /** 各语言初始代码模板（JSON 数组字符串） */
+    /**
+     * 代码Snippets。
+     */
     @JsonRawValue
     private String codeSnippets;
 
-    /** 题目标签（JSON 数组字符串，如 [{"name":"数组","slug":"array"}]） */
+    /**
+     * 主题标签。
+     */
     @JsonRawValue
     private String topicTags;
 
-    /** LeetCode 前端展示的题号（如 "1"、"2"） */
+    /**
+     * 前端展示编号。
+     */
     private String frontendId;
 
-    /** LeetCode 内部题目 ID（提交代码时需要） */
+    /**
+     * 远程题目ID。
+     */
     private String questionId;
 
-    /** 首次入库时间 */
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    /** 最后更新时间 */
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

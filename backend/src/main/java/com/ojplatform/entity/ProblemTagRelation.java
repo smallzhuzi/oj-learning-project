@@ -10,21 +10,35 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 题目标签关联实体类
- * 对应表：problem_tag_relations
+ * 题目标签关联实体类。
  */
 @TableName("problem_tag_relations")
 public class ProblemTagRelation implements Serializable {
 
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    /**
+     * 题目ID。
+     */
     private Long problemId;
 
+    /**
+     * 标签 ID。
+     */
     private Long tagId;
 
+    /**
+     * 平台标签 ID。
+     */
     private Long platformTagId;
 
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 

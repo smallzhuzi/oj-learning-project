@@ -6,7 +6,7 @@ import com.ojplatform.entity.Problem;
 import java.util.List;
 
 /**
- * 题目标签同步服务
+ * 标签同步相关业务接口。
  */
 public interface TagSyncService {
 

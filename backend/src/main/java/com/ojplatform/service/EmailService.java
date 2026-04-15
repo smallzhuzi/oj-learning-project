@@ -1,7 +1,7 @@
 package com.ojplatform.service;
 
 /**
- * 邮件验证码服务接口
+ * 邮件相关业务接口。
  */
 public interface EmailService {
 

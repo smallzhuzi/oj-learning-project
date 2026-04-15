@@ -3,26 +3,38 @@ package com.ojplatform.dto;
 import java.util.List;
 
 /**
- * 题目搜索请求 DTO
- * 支持按题号或标题模糊搜索，支持按难度筛选
+ * 题目查询数据传输对象。
  */
 public class ProblemQueryDTO {
 
-    /** 搜索关键词（题号或标题，可选） */
+    /**
+     * 关键字。
+     */
     private String keyword;
 
-    /** 难度筛选（Easy / Medium / Hard，可选） */
+    /**
+     * 难度。
+     */
     private String difficulty;
 
-    /** OJ 平台（默认 leetcode） */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
-    /** 当前页码（从 1 开始） */
+    /**
+     * 标签。
+     */
     private List<String> tags;
 
+    /**
+     * 页码。
+     */
     private Integer pageNum = 1;
 
-    /** 每页条数（默认 20） */
+    /**
+     * 每页数量。
+     */
     private Integer pageSize = 20;
 
     // ==================== Getter / Setter ====================

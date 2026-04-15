@@ -5,28 +5,37 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 队伍成员表实体类
- * 对应数据库表：contest_team_members
+ * 比赛队伍成员实体类。
  */
 @TableName("contest_team_members")
 public class ContestTeamMember implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 记录唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 队伍 ID */
+    /**
+     * 队伍ID。
+     */
     private Long teamId;
 
-    /** 用户 ID */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 角色：captain / member */
+    /**
+     * 角色。
+     */
     private String role;
 
-    /** 加入时间 */
+    /**
+     * 加入时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime joinedAt;
 

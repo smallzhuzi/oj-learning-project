@@ -1,17 +1,23 @@
 package com.ojplatform.dto;
 
 /**
- * 更新用户画像请求 DTO
+ * 更新用户画像数据传输对象。
  */
 public class UpdateUserProfileDTO {
 
-    /** 用户 ID（由后端从 JWT 中提取） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 自评水平：beginner / intermediate / advanced / expert */
+    /**
+     * 技能等级。
+     */
     private String skillLevel;
 
-    /** 目标水平 */
+    /**
+     * 目标等级。
+     */
     private String targetLevel;
 
     // ==================== Getter / Setter ====================

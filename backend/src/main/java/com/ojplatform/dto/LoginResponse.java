@@ -1,15 +1,29 @@
 package com.ojplatform.dto;
 
 /**
- * 登录/注册成功响应 DTO
- * 返回 JWT Token 和用户基本信息
+ * 登录响应数据传输对象。
  */
 public class LoginResponse {
 
+    /**
+     * 登录令牌。
+     */
     private String token;
+    /**
+     * 用户ID。
+     */
     private Long userId;
+    /**
+     * 用户名。
+     */
     private String username;
+    /**
+     * 邮箱。
+     */
     private String email;
+    /**
+     * 角色。
+     */
     private String role;
 
     public LoginResponse(String token, Long userId, String username, String email, String role) {

@@ -1,12 +1,13 @@
 package com.ojplatform.dto;
 
 /**
- * LeetCode 提交代码响应 DTO
- * 对应 POST /problems/{slug}/submit/ 的返回结果
+ * 力扣提交结果数据传输对象。
  */
 public class LeetCodeSubmitResult {
 
-    /** LeetCode 返回的远程提交 ID（用于后续轮询判题结果） */
+    /**
+     * 提交记录 ID。
+     */
     private String submissionId;
 
     public LeetCodeSubmitResult() {

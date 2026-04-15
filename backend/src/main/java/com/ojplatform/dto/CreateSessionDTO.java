@@ -3,19 +3,24 @@ package com.ojplatform.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * 创建练习会话请求 DTO
- * 用户从题库首页点击题目进入做题页面时调用
+ * 创建会话数据传输对象。
  */
 public class CreateSessionDTO {
 
-    /** 用户 ID（由后端从 JWT Token 中提取并设入） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 初始题目 slug（用户点击进入的那道题） */
+    /**
+     * 题目标识。
+     */
     @NotBlank(message = "题目 slug 不能为空")
     private String problemSlug;
 
-    /** OJ 平台标识（leetcode / luogu） */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
     // ==================== Getter / Setter ====================

@@ -7,8 +7,7 @@ import com.ojplatform.entity.Problem;
 import java.util.List;
 
 /**
- * 统一 OJ 平台 API 调用接口（策略模式）
- * 每个 OJ 平台（LeetCode、洛谷等）提供独立实现
+ * 判题接口相关业务接口。
  */
 public interface OjApiService {
 

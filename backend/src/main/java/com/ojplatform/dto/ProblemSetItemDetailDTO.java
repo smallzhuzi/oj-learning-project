@@ -3,42 +3,63 @@ package com.ojplatform.dto;
 import java.math.BigDecimal;
 
 /**
- * 题单题目详情 DTO
- * 用于返回题单内题目列表时携带题目基本信息
+ * 题单条目详情数据传输对象。
  */
 public class ProblemSetItemDetailDTO {
 
-    /** 关联记录 ID */
+    /**
+     * 唯一标识。
+     */
     private Long id;
 
-    /** 题单 ID */
+    /**
+     * 题单 ID。
+     */
     private Long setId;
 
-    /** 题目 ID */
+    /**
+     * 题目ID。
+     */
     private Long problemId;
 
-    /** 题目顺序 */
+    /**
+     * 顺序号。
+     */
     private Integer seqOrder;
 
-    /** 该题分值 */
+    /**
+     * 分数。
+     */
     private Integer score;
 
-    /** 题目 slug */
+    /**
+     * 题目标识。
+     */
     private String slug;
 
-    /** 题目标题 */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** LeetCode 前端题号 */
+    /**
+     * 前端展示编号。
+     */
     private String frontendId;
 
-    /** 难度 */
+    /**
+     * 难度。
+     */
     private String difficulty;
 
-    /** 通过率 */
+    /**
+     * 通过率。
+     */
     private BigDecimal acceptanceRate;
 
-    /** 题目标签 JSON */
+    /**
+     * 主题标签。
+     */
     private String topicTags;
 
     // ==================== Getter / Setter ====================

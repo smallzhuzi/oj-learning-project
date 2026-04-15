@@ -9,8 +9,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Web 全局配置
- * 配置跨域和 JWT 拦截器
+ * Web配置类。
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {

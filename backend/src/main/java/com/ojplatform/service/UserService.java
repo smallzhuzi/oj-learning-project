@@ -9,7 +9,7 @@ import com.ojplatform.dto.ChangePasswordDTO;
 import com.ojplatform.entity.User;
 
 /**
- * 用户服务接口
+ * 用户相关业务接口。
  */
 public interface UserService extends IService<User> {
 

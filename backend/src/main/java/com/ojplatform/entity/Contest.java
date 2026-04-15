@@ -6,79 +6,129 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 比赛表实体类
- * 对应数据库表：contests
- * 存储比赛的基本信息、规则配置和生命周期状态
+ * 比赛实体类。
  */
 @TableName("contests")
 public class Contest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 比赛唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 创建者用户 ID */
+    /**
+     * 创建者用户ID。
+     */
     private Long creatorId;
 
-    /** 比赛标题 */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 比赛说明 */
+    /**
+     * 描述。
+     */
     private String description;
 
-    /** 比赛类型：individual / team */
+    /**
+     * 比赛类型。
+     */
     private String contestType;
 
-    /** 状态：draft / registering / running / frozen / ended / archived */
+    /**
+     * 状态。
+     */
     private String status;
 
-    /** 关联题单 ID */
+    /**
+     * 题单ID。
+     */
     private Long problemSetId;
 
-    /** 比赛开始时间 */
+    /**
+     * 开始时间。
+     */
     private LocalDateTime startTime;
 
-    /** 比赛结束时间 */
+    /**
+     * 结束时间。
+     */
     private LocalDateTime endTime;
 
-    /** 比赛时长（分钟） */
+    /**
+     * 持续时间（分钟）。
+     */
     private Integer durationMinutes;
 
-    /** 封榜时间（比赛结束前 N 分钟，0 = 不封榜） */
+    /**
+     * 封榜时长（分钟）。
+     */
     private Integer freezeMinutes;
 
-    /** 最大参赛人数（0 = 不限） */
+    /**
+     * 最大参赛人数。
+     */
     private Integer maxParticipants;
 
-    /** 组队赛最大队伍人数 */
+    /**
+     * 最大队伍人数。
+     */
     private Integer maxTeamSize;
 
-    /** 计分规则：acm / oi / cf */
+    /**
+     * 最小队伍人数。
+     */
+    private Integer minTeamSize;
+
+    /**
+     * 计分规则。
+     */
     private String scoringRule;
 
-    /** ACM 罚时：每次错误提交罚 N 分钟 */
+    /**
+     * 罚时（分钟）。
+     */
     private Integer penaltyTime;
 
-    /** 允许的编程语言 JSON 数组 */
+    /**
+     * 允许的编程语言。
+     */
     @JsonRawValue
     private String allowLanguage;
 
-    /** 是否公开 */
+    /**
+     * 是否公开。
+     */
     private Boolean isPublic;
 
-    /** 私有比赛密码 */
+    /**
+     * 密码。
+     */
     private String password;
 
-    /** OJ 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
 
-    /** 创建时间 */
+    /**
+     * 草稿题目数据。
+     */
+    private String draftProblems;
+
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    /** 更新时间 */
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
@@ -188,6 +238,14 @@ public class Contest implements Serializable {
         this.maxTeamSize = maxTeamSize;
     }
 
+    public Integer getMinTeamSize() {
+        return minTeamSize;
+    }
+
+    public void setMinTeamSize(Integer minTeamSize) {
+        this.minTeamSize = minTeamSize;
+    }
+
     public String getScoringRule() {
         return scoringRule;
     }
@@ -235,6 +293,14 @@ public class Contest implements Serializable {
 
     public void setOjPlatform(String ojPlatform) {
         this.ojPlatform = ojPlatform;
+    }
+
+    public String getDraftProblems() {
+        return draftProblems;
+    }
+
+    public void setDraftProblems(String draftProblems) {
+        this.draftProblems = draftProblems;
     }
 
     public LocalDateTime getCreatedAt() {

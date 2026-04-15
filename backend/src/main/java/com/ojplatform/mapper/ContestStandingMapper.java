@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ojplatform.entity.ContestStanding;
 
 /**
- * 榜单快照表 Mapper 接口
+ * 比赛榜单数据访问接口。
  */
 public interface ContestStandingMapper extends BaseMapper<ContestStanding> {
 }

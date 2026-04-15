@@ -4,28 +4,47 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 用户做题统计 DTO
- * 包含总计、按平台、按难度、近期每日提交数据
+ * 用户统计数据传输对象。
  */
 public class UserStatsDTO {
 
-    /** 总计统计 */
+    /**
+     * 总数。
+     */
     private StatSummary total;
 
-    /** 按平台统计 (key: leetcode / luogu) */
+    /**
+     * 平台统计。
+     */
     private Map<String, StatSummary> platforms;
 
-    /** 按平台+难度统计 (key: 平台, value: {难度 → 解题数}) */
+    /**
+     * 难度统计。
+     */
     private Map<String, Map<String, Integer>> difficulties;
 
-    /** 近 30 天每日提交次数 */
+    /**
+     * 最近每日统计。
+     */
     private List<DailyCount> recentDaily;
 
     // ==================== 内部类 ====================
 
+    /**
+     * 统计汇总数据传输对象。
+     */
     public static class StatSummary {
+        /**
+         * 已通过数量。
+         */
         private int solved;
+        /**
+         * 已提交数量。
+         */
         private int submitted;
+        /**
+         * 通过率。
+         */
         private double acceptanceRate;
 
         public StatSummary() {}
@@ -43,8 +62,17 @@ public class UserStatsDTO {
         public void setAcceptanceRate(double acceptanceRate) { this.acceptanceRate = acceptanceRate; }
     }
 
+    /**
+     * 每日数量数据传输对象。
+     */
     public static class DailyCount {
+        /**
+         * 日期。
+         */
         private String date;
+        /**
+         * 数量。
+         */
         private int count;
 
         public DailyCount() {}

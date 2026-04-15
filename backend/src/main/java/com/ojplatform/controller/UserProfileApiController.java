@@ -9,8 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 用户画像控制器
- * 提供用户画像查看、自评更新、自动分析等接口
+ * 用户资料接口相关接口控制器。
  */
 @RestController
 @RequestMapping("/api/user-profile")
@@ -19,10 +18,9 @@ public class UserProfileApiController {
     @Autowired
     private UserProfileService userProfileService;
 
-    /**
-     * 获取当前用户画像
-     * GET /api/user-profile
-     */
+/**
+ * 查询当前用户画像。
+ */
     @GetMapping
     public Result<UserProfile> getProfile(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -30,10 +28,9 @@ public class UserProfileApiController {
         return Result.ok(profile);
     }
 
-    /**
-     * 更新用户自评水平和目标
-     * PUT /api/user-profile
-     */
+/**
+ * 更新自我评估信息。
+ */
     @PutMapping
     public Result<UserProfile> updateSelfAssessment(@RequestBody UpdateUserProfileDTO dto, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -42,10 +39,9 @@ public class UserProfileApiController {
         return Result.ok(profile);
     }
 
-    /**
-     * 触发用户画像自动分析
-     * POST /api/user-profile/analyze
-     */
+/**
+ * 基于做题数据分析用户画像。
+ */
     @PostMapping("/analyze")
     public Result<UserProfile> analyze(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");

@@ -5,7 +5,7 @@ import com.ojplatform.entity.UserOjConfig;
 import java.util.List;
 
 /**
- * 用户 OJ 平台配置服务接口
+ * 用户判题配置相关业务接口。
  */
 public interface UserOjConfigService {
 

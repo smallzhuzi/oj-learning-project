@@ -5,32 +5,42 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 题单题目关联表实体类
- * 对应数据库表：problem_set_items
- * 题单内包含的题目列表
+ * 题单条目实体类。
  */
 @TableName("problem_set_items")
 public class ProblemSetItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 关联记录唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 题单 ID */
+    /**
+     * 题单 ID。
+     */
     private Long setId;
 
-    /** 题目 ID */
+    /**
+     * 题目ID。
+     */
     private Long problemId;
 
-    /** 题目在题单中的顺序 */
+    /**
+     * 顺序号。
+     */
     private Integer seqOrder;
 
-    /** 该题分值 */
+    /**
+     * 分数。
+     */
     private Integer score;
 
-    /** 添加时间 */
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 

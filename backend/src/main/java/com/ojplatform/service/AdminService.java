@@ -5,7 +5,7 @@ import com.ojplatform.dto.AdminCreateUserDTO;
 import com.ojplatform.entity.User;
 
 /**
- * 管理员服务接口
+ * 管理相关业务接口。
  */
 public interface AdminService {
 

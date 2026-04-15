@@ -5,37 +5,52 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * Dify 智能组题请求 DTO
- * 用户描述自己的水平和目标，由 Dify 智能推荐题目组合
+ * 智能生成数据传输对象。
  */
 public class SmartGenerateDTO {
 
-    /** 用户 ID（由后端从 JWT 中提取） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 题单标题（可选） */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 题目数量 */
+    /**
+     * 数量。
+     */
     @Min(value = 1, message = "至少 1 道题")
     @Max(value = 50, message = "最多 50 道题")
     private Integer count = 10;
 
-    /** 自我定位描述（如"刷了50题Easy，Medium偶尔能做出来"） */
+    /**
+     * 自我评估。
+     */
     @NotBlank(message = "请描述你的当前水平")
     private String selfAssessment;
 
-    /** 目标要求描述（如"想要能稳定做出Medium，冲击Hard"） */
+    /**
+     * 目标Goal。
+     */
     @NotBlank(message = "请描述你的目标")
     private String targetGoal;
 
-    /** 偏好方向（可选，如"想加强动态规划"） */
+    /**
+     * 偏好设置。
+     */
     private String preference;
 
-    /** 时间预算描述（可选，如"2小时练习"） */
+    /**
+     * 时间Budget。
+     */
     private String timeBudget;
 
-    /** OJ 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
     // ==================== Getter / Setter ====================

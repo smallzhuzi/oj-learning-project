@@ -20,12 +20,14 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 提交记录服务实现类
- * 负责：保存提交记录 → 转发代码到远程 OJ → 轮询判题结果
+ * 提交相关业务实现。
  */
 @Service
 public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submission> implements SubmissionService {
@@ -38,17 +40,18 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
     @Autowired
     private OjApiServiceFactory ojApiServiceFactory;
 
+    /**
+     * 创建本地提交记录，并同步转发到远程 OJ。
+     */
     @Override
     public Submission submitCode(SubmitCodeDTO dto) {
         String ojPlatform = dto.getOjPlatform();
 
-        // 1. 查找本地题目记录
         Problem problem = problemService.getBySlug(dto.getProblemSlug(), ojPlatform);
         if (problem == null) {
             throw new RuntimeException("题目不存在：" + dto.getProblemSlug());
         }
 
-        // 2. 创建提交记录（状态为 Pending）
         Submission submission = new Submission();
         submission.setUserId(dto.getUserId());
         submission.setProblemId(problem.getId());
@@ -58,22 +61,25 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
         submission.setStatus("Pending");
         baseMapper.insert(submission);
 
-        // 3. 通过策略工厂获取对应平台的 API 服务，提交代码
         OjApiService apiService = ojApiServiceFactory.getService(ojPlatform);
         String platformLang = apiService.mapLanguage(dto.getLanguage());
-        String remoteId = apiService.submitCode(
-                problem.getSlug(),
-                problem.getQuestionId(),
-                platformLang,
-                dto.getCode()
-        );
-        submission.setRemoteSubmissionId(remoteId);
-        baseMapper.updateById(submission);
-        log.info("代码提交成功：ojPlatform={}, problemSlug={}, remoteId={}", ojPlatform, dto.getProblemSlug(), remoteId);
+        try {
+            String remoteId = apiService.submitCode(problem.getSlug(), problem.getQuestionId(), platformLang, dto.getCode());
+            submission.setRemoteSubmissionId(remoteId);
+            baseMapper.updateById(submission);
+            log.info("代码提交成功：ojPlatform={}, problemSlug={}, remoteId={}", ojPlatform, dto.getProblemSlug(), remoteId);
+        } catch (RuntimeException e) {
+            submission.setStatus("Submit Failed");
+            baseMapper.updateById(submission);
+            throw new RuntimeException("远程判题服务暂时不可用，提交未进入判题队列，请稍后重试");
+        }
 
         return submission;
     }
 
+    /**
+     * 拉取远程判题结果，并把终态回写到本地提交记录。
+     */
     @Override
     public Submission pollResult(Long submissionId) {
         Submission submission = baseMapper.selectById(submissionId);
@@ -81,17 +87,14 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
             throw new RuntimeException("提交记录不存在：" + submissionId);
         }
 
-        // 如果没有远程提交 ID，无法轮询
         if (submission.getRemoteSubmissionId() == null) {
             return submission;
         }
 
-        // 如果已经有最终结果，不再轮询
         if (!"Pending".equals(submission.getStatus())) {
             return submission;
         }
 
-        // 反查题目获取 ojPlatform，通过策略工厂路由到对应服务
         Problem problem = problemService.getById(submission.getProblemId());
         OjApiService apiService = ojApiServiceFactory.getService(problem.getOjPlatform());
         OjJudgeResult result = apiService.checkResult(submission.getRemoteSubmissionId());
@@ -112,22 +115,24 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
     @Override
     public List<Submission> getSessionSubmissions(Long sessionId) {
         return baseMapper.selectList(
-            new LambdaQueryWrapper<Submission>()
-                .eq(Submission::getSessionId, sessionId)
-                .orderByAsc(Submission::getSubmittedAt)
+                new LambdaQueryWrapper<Submission>()
+                        .eq(Submission::getSessionId, sessionId)
+                        .orderByAsc(Submission::getSubmittedAt)
         );
     }
 
     @Override
     public List<Submission> getUserProblemSubmissions(Long userId, String problemSlug, String ojPlatform) {
         Problem problem = problemService.getBySlug(problemSlug, ojPlatform);
-        if (problem == null) return List.of();
+        if (problem == null) {
+            return List.of();
+        }
         return baseMapper.selectList(
-            new LambdaQueryWrapper<Submission>()
-                .eq(Submission::getUserId, userId)
-                .eq(Submission::getProblemId, problem.getId())
-                .ne(Submission::getStatus, "Pending")
-                .orderByDesc(Submission::getSubmittedAt)
+                new LambdaQueryWrapper<Submission>()
+                        .eq(Submission::getUserId, userId)
+                        .eq(Submission::getProblemId, problem.getId())
+                        .ne(Submission::getStatus, "Pending")
+                        .orderByDesc(Submission::getSubmittedAt)
         );
     }
 
@@ -135,19 +140,22 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
     public Map<String, String> getUserStatusMap(Long userId) {
         List<ProblemStatusDTO> list = baseMapper.selectUserStatusMap(userId);
         return list.stream().collect(Collectors.toMap(
-            ProblemStatusDTO::getSlug,
-            ProblemStatusDTO::getStatus
+                ProblemStatusDTO::getSlug,
+                ProblemStatusDTO::getStatus
         ));
     }
 
+    /**
+     * 汇总用户提交、通过率和活跃天数等统计信息。
+     */
     @Override
     public UserStatsDTO getUserStats(Long userId) {
         UserStatsDTO dto = new UserStatsDTO();
 
-        // 1. 按平台统计
         List<Map<String, Object>> platformRows = baseMapper.selectStatsByPlatform(userId);
         Map<String, UserStatsDTO.StatSummary> platforms = new LinkedHashMap<>();
-        int totalSolved = 0, totalSubmitted = 0;
+        int totalSolved = 0;
+        int totalSubmitted = 0;
         for (Map<String, Object> row : platformRows) {
             String platform = (String) row.get("platform");
             int solved = ((Number) row.get("solved")).intValue();
@@ -161,13 +169,11 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
         }
         dto.setPlatforms(platforms);
 
-        // 总计
         double totalRate = totalSubmitted > 0
                 ? BigDecimal.valueOf(totalSolved * 100.0 / totalSubmitted).setScale(1, RoundingMode.HALF_UP).doubleValue()
                 : 0;
         dto.setTotal(new UserStatsDTO.StatSummary(totalSolved, totalSubmitted, totalRate));
 
-        // 2. 按平台+难度统计
         List<Map<String, Object>> diffRows = baseMapper.selectSolvedByDifficulty(userId);
         Map<String, Map<String, Integer>> difficulties = new LinkedHashMap<>();
         for (Map<String, Object> row : diffRows) {
@@ -178,7 +184,6 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
         }
         dto.setDifficulties(difficulties);
 
-        // 3. 近 30 天每日提交
         List<Map<String, Object>> dailyRows = baseMapper.selectRecentDaily(userId);
         List<UserStatsDTO.DailyCount> daily = new ArrayList<>();
         for (Map<String, Object> row : dailyRows) {

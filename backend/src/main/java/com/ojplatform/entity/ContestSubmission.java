@@ -5,59 +5,87 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 比赛提交表实体类
- * 对应数据库表：contest_submissions
- * 独立于普通提交的比赛专用提交记录
+ * 比赛提交实体类。
  */
 @TableName("contest_submissions")
 public class ContestSubmission implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 比赛提交记录唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 比赛 ID */
+    /**
+     * 比赛ID。
+     */
     private Long contestId;
 
-    /** 提交者用户 ID */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 队伍 ID（组队赛时使用） */
+    /**
+     * 队伍ID。
+     */
     private Long teamId;
 
-    /** 题目 ID */
+    /**
+     * 题目ID。
+     */
     private Long problemId;
 
-    /** 编程语言 */
+    /**
+     * 编程语言。
+     */
     private String language;
 
-    /** 用户提交的源代码 */
+    /**
+     * 代码内容。
+     */
     private String code;
 
-    /** 判题状态 */
+    /**
+     * 状态。
+     */
     private String status;
 
-    /** 运行耗时 */
+    /**
+     * 运行耗时。
+     */
     private String runtime;
 
-    /** 内存消耗 */
+    /**
+     * 内存消耗。
+     */
     private String memory;
 
-    /** 通过的测试用例数 */
+    /**
+     * 通过用例数。
+     */
     private Integer totalCorrect;
 
-    /** 总测试用例数 */
+    /**
+     * 总用例数。
+     */
     private Integer totalTestcases;
 
-    /** OI 赛制的该次提交得分 */
+    /**
+     * 分数。
+     */
     private Integer score;
 
-    /** 远程 OJ 提交 ID */
+    /**
+     * 远程提交ID。
+     */
     private String remoteSubmissionId;
 
-    /** 提交时间 */
+    /**
+     * 提交时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime submittedAt;
 

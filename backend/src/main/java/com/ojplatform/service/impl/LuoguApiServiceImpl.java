@@ -22,9 +22,7 @@ import java.math.RoundingMode;
 import java.util.*;
 
 /**
- * 洛谷 API 调用服务实现
- * 使用 OkHttp 调用 www.luogu.com.cn 的 REST 接口
- * 通过 _contentOnly=1 参数获取 JSON 数据
+ * 洛谷接口相关业务实现。
  */
 @Service
 public class LuoguApiServiceImpl implements OjApiService {

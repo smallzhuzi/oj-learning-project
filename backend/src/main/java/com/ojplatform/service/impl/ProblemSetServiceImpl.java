@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 题单服务实现类
+ * 题单相关业务实现。
  */
 @Service
 public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, ProblemSet> implements ProblemSetService {
@@ -61,6 +61,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
     @Autowired
     private ProblemTagRelationMapper problemTagRelationMapper;
 
+/**
+ * 创建题单并写入题目条目。
+ */
     @Override
     @Transactional
     public ProblemSet createProblemSet(CreateProblemSetDTO dto) {
@@ -103,6 +106,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         return ps;
     }
 
+/**
+ * 根据条件快速生成题单。
+ */
     @Override
     @Transactional
     public ProblemSet quickGenerate(QuickGenerateDTO dto) {
@@ -184,6 +190,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         return ps;
     }
 
+/**
+ * 分页查询用户自己的题单。
+ */
     @Override
     public IPage<ProblemSet> getUserProblemSets(Long userId, int pageNum, int pageSize) {
         return baseMapper.selectPage(
@@ -195,6 +204,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         );
     }
 
+/**
+ * 分页查询公开题单。
+ */
     @Override
     public IPage<ProblemSet> getPublicProblemSets(int pageNum, int pageSize) {
         return baseMapper.selectPage(
@@ -206,11 +218,17 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         );
     }
 
+/**
+ * 查询题单中的题目详情。
+ */
     @Override
     public List<ProblemSetItemDetailDTO> getProblemSetItems(Long setId) {
         return problemSetItemMapper.selectItemsWithDetail(setId);
     }
 
+/**
+ * 向题单追加题目。
+ */
     @Override
     @Transactional
     public void addProblemToSet(Long setId, String problemSlug, Integer score, Long userId) {
@@ -250,6 +268,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         baseMapper.updateById(ps);
     }
 
+/**
+ * 从题单移除题目。
+ */
     @Override
     @Transactional
     public void removeProblemFromSet(Long setId, Long itemId, Long userId) {
@@ -287,6 +308,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         }
     }
 
+/**
+ * 重排题单题目顺序。
+ */
     @Override
     @Transactional
     public void reorderItems(Long setId, List<Long> itemIds, Long userId) {
@@ -308,6 +332,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         }
     }
 
+/**
+ * 删除题单及其条目。
+ */
     @Override
     @Transactional
     public void deleteProblemSet(Long setId, Long userId) {
@@ -323,6 +350,9 @@ public class ProblemSetServiceImpl extends ServiceImpl<ProblemSetMapper, Problem
         log.info("删除题单：id={}", setId);
     }
 
+/**
+ * 更新题单基础信息。
+ */
     @Override
     public void updateProblemSet(Long setId, CreateProblemSetDTO dto) {
         ProblemSet ps = baseMapper.selectById(setId);

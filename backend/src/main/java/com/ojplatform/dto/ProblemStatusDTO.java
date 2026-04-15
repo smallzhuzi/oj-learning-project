@@ -1,13 +1,17 @@
 package com.ojplatform.dto;
 
 /**
- * 题目提交状态 DTO（用于题库首页批量查询）
- * slug → status (accepted / attempted)
+ * 题目状态数据传输对象。
  */
 public class ProblemStatusDTO {
 
+    /**
+     * 题目标识。
+     */
     private String slug;
-    /** accepted = 有 AC 提交；attempted = 有提交但未 AC */
+    /**
+     * 状态。
+     */
     private String status;
 
     public String getSlug() { return slug; }

@@ -3,29 +3,41 @@ package com.ojplatform.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * 比赛提交代码请求 DTO
+ * 比赛提交数据传输对象。
  */
 public class ContestSubmitDTO {
 
-    /** 用户 ID（由后端从 JWT 中提取） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 比赛 ID */
+    /**
+     * 比赛ID。
+     */
     private Long contestId;
 
-    /** 题目 slug */
+    /**
+     * 题目标识。
+     */
     @NotBlank(message = "题目 slug 不能为空")
     private String problemSlug;
 
-    /** 编程语言 */
+    /**
+     * 编程语言。
+     */
     @NotBlank(message = "编程语言不能为空")
     private String language;
 
-    /** 用户代码 */
+    /**
+     * 代码内容。
+     */
     @NotBlank(message = "代码不能为空")
     private String code;
 
-    /** OJ 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
     // ==================== Getter / Setter ====================

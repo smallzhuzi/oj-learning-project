@@ -21,8 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 练习会话服务实现类
- * 核心逻辑：管理会话生命周期 + 题目跳转轨迹
+ * 练习会话相关业务实现。
  */
 @Service
 public class PracticeSessionServiceImpl
@@ -37,6 +36,9 @@ public class PracticeSessionServiceImpl
     @Autowired
     private ProblemService problemService;
 
+/**
+ * 创建新的练习会话。
+ */
     @Override
     @Transactional
     public PracticeSession createSession(CreateSessionDTO dto) {
@@ -74,6 +76,9 @@ public class PracticeSessionServiceImpl
         return session;
     }
 
+/**
+ * 向练习会话追加下一题。
+ */
     @Override
     @Transactional
     public SessionProblem addNextProblem(Long sessionId, String problemSlug, String ojPlatform) {
@@ -105,11 +110,17 @@ public class PracticeSessionServiceImpl
         return sp;
     }
 
+/**
+ * 读取会话做题轨迹。
+ */
     @Override
     public List<SessionTrackItemDTO> getSessionTrack(Long sessionId) {
         return sessionProblemMapper.selectTrackWithProblemInfo(sessionId);
     }
 
+/**
+ * 绑定 Dify 会话标识。
+ */
     @Override
     public void bindDifyConversation(Long sessionId, String difyConversationId) {
         PracticeSession session = baseMapper.selectById(sessionId);
@@ -120,11 +131,17 @@ public class PracticeSessionServiceImpl
         baseMapper.updateById(session);
     }
 
+/**
+ * 查询用户的会话链路列表。
+ */
     @Override
     public List<SessionChainDTO> getUserChains(Long userId) {
         return baseMapper.selectUserChains(userId);
     }
 
+/**
+ * 删除指定会话链路。
+ */
     @Override
     @Transactional
     public void deleteChain(Long sessionId, Long userId) {
@@ -144,6 +161,9 @@ public class PracticeSessionServiceImpl
         log.info("删除轨迹链：sessionId={}, userId={}", sessionId, userId);
     }
 
+/**
+ * 刷新会话最近活动时间。
+ */
     @Override
     public void touchSession(Long sessionId) {
         PracticeSession session = baseMapper.selectById(sessionId);

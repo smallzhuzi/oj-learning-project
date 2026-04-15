@@ -3,8 +3,7 @@ package com.ojplatform.util;
 import java.util.Map;
 
 /**
- * 洛谷难度映射工具
- * 将洛谷的数字难度等级（0-7）转为中文标签，直接存储原始难度
+ * 洛谷Difficulty数据访问接口。
  */
 public class LuoguDifficultyMapper {
 

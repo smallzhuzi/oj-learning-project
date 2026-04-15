@@ -11,35 +11,67 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 平台标签映射实体类
- * 对应表：platform_tags
+ * 平台标签实体类。
  */
 @TableName("platform_tags")
 public class PlatformTag implements Serializable {
 
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
 
+    /**
+     * 来源标签 ID。
+     */
     private String sourceTagId;
 
+    /**
+     * 来源标识。
+     */
     private String sourceSlug;
 
+    /**
+     * 来源Name。
+     */
     private String sourceName;
 
+    /**
+     * 规范化键。
+     */
     private String normalizedKey;
 
+    /**
+     * 标签类型 ID。
+     */
     private Long tagTypeId;
 
+    /**
+     * 标签 ID。
+     */
     private Long tagId;
 
+    /**
+     * 元数据。
+     */
     @JsonRawValue
     private String metadata;
 
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

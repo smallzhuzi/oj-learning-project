@@ -3,28 +3,61 @@ package com.ojplatform.dto;
 import java.time.LocalDateTime;
 
 /**
- * 会话轨迹项 DTO（关联题目详情）
- * 用于前端侧边栏展示题号、标题、难度等信息
+ * 会话轨迹条目数据传输对象。
  */
 public class SessionTrackItemDTO {
 
+    /**
+     * 唯一标识。
+     */
     private Long id;
+    /**
+     * 会话ID。
+     */
     private Long sessionId;
+    /**
+     * 题目ID。
+     */
     private Long problemId;
+    /**
+     * 跳转类型。
+     */
     private String jumpType;
+    /**
+     * 顺序号。
+     */
     private Integer seqOrder;
+    /**
+     * 跳转时间。
+     */
     private LocalDateTime jumpedAt;
 
     // 以下字段来自 problems 表 JOIN
+    /**
+     * 题目标识。
+     */
     private String slug;
+    /**
+     * 标题。
+     */
     private String title;
+    /**
+     * 前端展示编号。
+     */
     private String frontendId;
+    /**
+     * 难度。
+     */
     private String difficulty;
 
     // 以下字段来自 submissions 表子查询
-    /** 该题在该会话内的提交次数 */
+    /**
+     * 尝试次数。
+     */
     private Integer attemptCount;
-    /** 该题在该会话内是否已通过（AC） */
+    /**
+     * 是否通过。
+     */
     private Boolean accepted;
 
     // ==================== Getter / Setter ====================

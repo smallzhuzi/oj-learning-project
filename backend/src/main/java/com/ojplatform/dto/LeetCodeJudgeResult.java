@@ -1,33 +1,48 @@
 package com.ojplatform.dto;
 
 /**
- * LeetCode 判题结果 DTO
- * 对应轮询接口 /submissions/detail/{id}/check/ 的返回结果
+ * 力扣判题结果数据传输对象。
  */
 public class LeetCodeJudgeResult {
 
-    /** 判题是否完成（state 为 SUCCESS 时为 true） */
+    /**
+     * 是否完成。
+     */
     private boolean finished;
 
-    /** 判题状态（SUCCESS / PENDING / STARTED） */
+    /**
+     * 状态值。
+     */
     private String state;
 
-    /** 结果描述（Accepted / Wrong Answer / Time Limit Exceeded 等） */
+    /**
+     * 状态Msg。
+     */
     private String statusMsg;
 
-    /** 运行耗时（如 "4 ms"） */
+    /**
+     * 运行耗时。
+     */
     private String runtime;
 
-    /** 内存消耗（如 "39.2 MB"） */
+    /**
+     * 内存消耗。
+     */
     private String memory;
 
-    /** 通过的测试用例数 */
+    /**
+     * 通过用例数。
+     */
     private Integer totalCorrect;
 
-    /** 总测试用例数 */
+    /**
+     * 总用例数。
+     */
     private Integer totalTestcases;
 
-    /** 是否运行成功 */
+    /**
+     * 是否运行成功。
+     */
     private Boolean runSuccess;
 
     // ==================== Getter / Setter ====================

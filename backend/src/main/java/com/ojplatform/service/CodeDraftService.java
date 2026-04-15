@@ -6,6 +6,9 @@ import com.ojplatform.entity.CodeDraft;
 
 import java.util.List;
 
+/**
+ * 代码草稿相关业务接口。
+ */
 public interface CodeDraftService extends IService<CodeDraft> {
 
     /** 保存/更新草稿（upsert） */

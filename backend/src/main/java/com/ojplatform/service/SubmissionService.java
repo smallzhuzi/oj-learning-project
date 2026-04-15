@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 提交记录服务接口
+ * 提交相关业务接口。
  */
 public interface SubmissionService extends IService<Submission> {
 

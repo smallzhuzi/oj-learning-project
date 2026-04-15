@@ -8,26 +8,64 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 题目返回 DTO
- * 在保留原 Problem 主要字段的基础上，将 topicTags 统一为结构化标签列表。
+ * 题目数据传输对象。
  */
 public class ProblemDTO {
 
+    /**
+     * 唯一标识。
+     */
     private Long id;
+    /**
+     * 题目标识。
+     */
     private String slug;
+    /**
+     * 标题。
+     */
     private String title;
+    /**
+     * 难度。
+     */
     private String difficulty;
+    /**
+     * 通过率。
+     */
     private BigDecimal acceptanceRate;
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
+    /**
+     * Markdown 格式内容。
+     */
     private String contentMarkdown;
 
+    /**
+     * 代码Snippets。
+     */
     @JsonRawValue
     private String codeSnippets;
 
+    /**
+     * 主题标签。
+     */
     private List<ProblemTagDTO> topicTags;
+    /**
+     * 前端展示编号。
+     */
     private String frontendId;
+    /**
+     * 远程题目ID。
+     */
     private String questionId;
+    /**
+     * 创建时间。
+     */
     private LocalDateTime createdAt;
+    /**
+     * 更新时间。
+     */
     private LocalDateTime updatedAt;
 
     public static ProblemDTO fromProblem(Problem problem, List<ProblemTagDTO> topicTags) {

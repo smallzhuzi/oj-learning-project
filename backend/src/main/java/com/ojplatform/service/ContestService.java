@@ -10,8 +10,7 @@ import com.ojplatform.entity.ContestTeam;
 import java.util.List;
 
 /**
- * 比赛服务接口
- * 提供比赛 CRUD、报名、组队、提交、榜单等功能
+ * 比赛相关业务接口。
  */
 public interface ContestService extends IService<Contest> {
 
@@ -45,8 +44,10 @@ public interface ContestService extends IService<Contest> {
 
     /**
      * 报名比赛
+     * @param teamId 组队赛时传入独立队伍 ID，个人赛传 null
+     * @param memberUserIds 组队赛时传入出场成员 ID 列表，个人赛传 null
      */
-    void registerContest(Long contestId, Long userId, String password);
+    void registerContest(Long contestId, Long userId, String password, Long teamId, java.util.List<Long> memberUserIds);
 
     /**
      * 取消报名
@@ -59,11 +60,6 @@ public interface ContestService extends IService<Contest> {
     ContestTeam createTeam(Long contestId, CreateTeamDTO dto);
 
     /**
-     * 通过邀请码加入队伍
-     */
-    void joinTeam(Long contestId, JoinTeamDTO dto);
-
-    /**
      * 退出队伍
      */
     void leaveTeam(Long contestId, Long teamId, Long userId);
@@ -71,7 +67,34 @@ public interface ContestService extends IService<Contest> {
     /**
      * 获取比赛的队伍列表
      */
-    List<ContestTeam> getTeams(Long contestId);
+    List<ContestTeamLobbyDTO> getTeams(Long contestId);
+
+    /**
+     * 获取当前用户所在队伍详情
+     */
+    ContestTeamDetailDTO getMyTeam(Long contestId, Long userId);
+
+    List<MyTeamSummaryDTO> getMyTeams(Long userId);
+
+    /**
+     * 修改队伍名称
+     */
+    ContestTeamDetailDTO updateTeam(Long contestId, Long teamId, UpdateTeamDTO dto);
+
+    /**
+     * 转让队长
+     */
+    void transferCaptain(Long contestId, Long teamId, TransferCaptainDTO dto);
+
+    /**
+     * 移除队员
+     */
+    void removeTeamMember(Long contestId, Long teamId, Long operatorUserId, Long targetUserId);
+
+    /**
+     * 解散队伍
+     */
+    void dissolveTeam(Long contestId, Long teamId, Long userId);
 
     /**
      * 比赛中提交代码

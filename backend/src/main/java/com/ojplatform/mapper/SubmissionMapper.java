@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 提交记录表 Mapper 接口
+ * 提交数据访问接口。
  */
 public interface SubmissionMapper extends BaseMapper<Submission> {
 

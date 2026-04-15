@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * JWT 认证拦截器
- * 校验请求头中的 Authorization Token，并将用户信息注入 request 属性
+ * JWT请求拦截器。
  */
 @Component
 public class JwtInterceptor implements HandlerInterceptor {

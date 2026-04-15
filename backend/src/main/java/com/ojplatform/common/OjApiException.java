@@ -1,8 +1,7 @@
 package com.ojplatform.common;
 
 /**
- * 通用 OJ 平台 API 调用异常
- * 所有平台特定异常（如 LeetCodeApiException）应继承此类
+ * 判题接口异常类型。
  */
 public class OjApiException extends RuntimeException {
 

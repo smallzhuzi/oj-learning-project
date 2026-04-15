@@ -13,6 +13,9 @@ import ProblemSetPage from './pages/ProblemSetPage'
 import ContestListPage from './pages/ContestListPage'
 import ContestDetailPage from './pages/ContestDetailPage'
 import CreateContestPage from './pages/CreateContestPage'
+import TeamSpacePage from './pages/TeamSpacePage'
+import MyTeamsPage from './pages/MyTeamsPage'
+import TeamDetailPage from './pages/TeamDetailPage'
 
 /** 路由守卫：无 token 则跳转登录 */
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -65,6 +68,9 @@ export default function App() {
       <Route path="/" element={<PrivateRoute><ProblemListPage /></PrivateRoute>} />
       <Route path="/problem/:slug" element={<PrivateRoute><ProblemPage /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+      <Route path="/teams" element={<PrivateRoute><TeamSpacePage /></PrivateRoute>} />
+      <Route path="/teams/mine" element={<PrivateRoute><MyTeamsPage /></PrivateRoute>} />
+      <Route path="/teams/:id" element={<PrivateRoute><TeamDetailPage /></PrivateRoute>} />
       <Route path="/problem-sets" element={<PrivateRoute><ProblemSetPage /></PrivateRoute>} />
       <Route path="/contests" element={<PrivateRoute><ContestListPage /></PrivateRoute>} />
       <Route path="/contests/create" element={<PrivateRoute><CreateContestPage /></PrivateRoute>} />

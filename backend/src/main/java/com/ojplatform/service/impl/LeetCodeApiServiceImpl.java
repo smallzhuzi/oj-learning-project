@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LeetCode API 调用服务实现
- * 实现统一的 OjApiService 接口，使用 OkHttp 调用 LeetCode CN 的 GraphQL 和 REST 接口
+ * 力扣接口相关业务实现。
  */
 @Service
 public class LeetCodeApiServiceImpl implements OjApiService {

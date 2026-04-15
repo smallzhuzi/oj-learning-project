@@ -3,16 +3,25 @@ package com.ojplatform.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * 创建队伍请求 DTO
+ * 创建比赛队伍数据传输对象。
  */
 public class CreateTeamDTO {
 
-    /** 用户 ID（由后端从 JWT 中提取，自动成为队长） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 队伍名称 */
+    /**
+     * 队伍名称。
+     */
     @NotBlank(message = "队伍名称不能为空")
     private String teamName;
+
+    /**
+     * 描述。
+     */
+    private String description;
 
     // ==================== Getter / Setter ====================
 
@@ -30,5 +39,13 @@ public class CreateTeamDTO {
 
     public void setTeamName(String teamName) {
         this.teamName = teamName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

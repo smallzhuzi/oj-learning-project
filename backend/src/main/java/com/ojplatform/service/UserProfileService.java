@@ -5,7 +5,7 @@ import com.ojplatform.dto.UpdateUserProfileDTO;
 import com.ojplatform.entity.UserProfile;
 
 /**
- * 用户画像服务接口
+ * 用户资料相关业务接口。
  */
 public interface UserProfileService extends IService<UserProfile> {
 

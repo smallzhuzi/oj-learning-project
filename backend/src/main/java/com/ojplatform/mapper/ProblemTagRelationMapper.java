@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 /**
- * 题目标签关联 Mapper 接口
+ * 题目标签关联数据访问接口。
  */
 public interface ProblemTagRelationMapper extends BaseMapper<ProblemTagRelation> {
 

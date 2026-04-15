@@ -5,45 +5,67 @@ import jakarta.validation.constraints.Min;
 import java.util.List;
 
 /**
- * 快速组题请求 DTO
+ * 快速生成数据传输对象。
  */
 public class QuickGenerateDTO {
 
-    /** 用户 ID（由后端从 JWT 中提取） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 题单标题（可选，不填则自动生成） */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 题目数量 */
+    /**
+     * 数量。
+     */
     @Min(value = 1, message = "至少 1 道题")
     @Max(value = 50, message = "最多 50 道题")
     private Integer count = 10;
 
-    /** 难度定位：beginner / intermediate / advanced / custom */
+    /**
+     * 难度等级。
+     */
     private String difficultyLevel = "intermediate";
 
     /**
-     * 自定义难度分布（仅 difficultyLevel=custom 时使用）
-     * 如 {"Easy": 30, "Medium": 50, "Hard": 20}，表示百分比
+     * 难度分布。
      */
     private DifficultyDistribution distribution;
 
-    /** 知识点标签过滤（可选） */
+    /**
+     * 标签。
+     */
     private List<String> tags;
 
-    /** 是否排除用户已 AC 的题 */
+    /**
+     * 是否排除已通过题目。
+     */
     private Boolean excludeSolved = true;
 
-    /** OJ 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
     /**
-     * 难度分布
+     * 难度Distribution数据传输对象。
      */
     public static class DifficultyDistribution {
+        /**
+         * 简单题数量。
+         */
         private Integer easy = 0;
+        /**
+         * 中等题数量。
+         */
         private Integer medium = 0;
+        /**
+         * 困难题数量。
+         */
         private Integer hard = 0;
 
         public Integer getEasy() {

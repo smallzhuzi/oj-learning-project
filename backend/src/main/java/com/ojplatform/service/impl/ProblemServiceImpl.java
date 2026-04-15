@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * 题目服务实现类
+ * 题目相关业务实现。
  */
 @Service
 public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> implements ProblemService {
@@ -44,6 +44,9 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
     @Autowired
     private ProblemTagRelationMapper problemTagRelationMapper;
 
+/**
+ * 按条件分页查询题目。
+ */
     @Override
     public IPage<Problem> queryProblems(ProblemQueryDTO queryDTO) {
         Page<Problem> page = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
@@ -92,6 +95,9 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
         return baseMapper.selectPage(page, wrapper);
     }
 
+/**
+ * 按平台和 slug 查询题目。
+ */
     @Override
     public Problem getBySlug(String slug, String ojPlatform) {
         // 1. 先查本地缓存
@@ -154,6 +160,9 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
         return problem;
     }
 
+/**
+ * 按关键字分页查询标签选项。
+ */
     @Override
     public Page<ProblemTagOptionDTO> searchTagOptions(String ojPlatform, String keyword, long pageNum, long pageSize) {
         String platform = StringUtils.hasText(ojPlatform) ? ojPlatform.trim() : "leetcode";

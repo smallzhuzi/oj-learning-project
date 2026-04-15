@@ -8,8 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * LeetCode API 配置类
- * 绑定 application.yml 中 leetcode 配置段，注册全局 OkHttpClient
+ * 力扣配置类。
  */
 @Configuration
 @ConfigurationProperties(prefix = "leetcode")

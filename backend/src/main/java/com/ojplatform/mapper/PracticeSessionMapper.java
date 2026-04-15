@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 /**
- * 练习会话表 Mapper 接口
+ * 练习会话数据访问接口。
  */
 public interface PracticeSessionMapper extends BaseMapper<PracticeSession> {
 

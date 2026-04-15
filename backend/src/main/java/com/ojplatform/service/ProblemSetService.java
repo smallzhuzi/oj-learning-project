@@ -10,8 +10,7 @@ import com.ojplatform.entity.ProblemSet;
 import java.util.List;
 
 /**
- * 题单服务接口
- * 提供题单 CRUD、快速组题、题单题目管理等功能
+ * 题单相关业务接口。
  */
 public interface ProblemSetService extends IService<ProblemSet> {
 

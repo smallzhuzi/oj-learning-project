@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Loader2, Search, X, Plus, Trash2, GripVertical, Zap, Bot } from 'lucide-react'
-import { createContest, updateContest, publishContest, getContestDetail, getContestProblems } from '@/api/contest'
+import { createContest, updateContest, getContestDetail, getContestProblems } from '@/api/contest'
 import { getProblems } from '@/api/problem'
 import { quickGenerate, getMyProblemSets, getProblemSetItems } from '@/api/problemSet'
 import { smartGenerateStream } from '@/api/dify'
@@ -45,6 +45,7 @@ export default function CreateContestPage() {
   const [penaltyTime, setPenaltyTime] = useState(20)
   const [maxParticipants, setMaxParticipants] = useState(0)
   const [maxTeamSize, setMaxTeamSize] = useState(3)
+  const [minTeamSize, setMinTeamSize] = useState(1)
   const [isPublic, setIsPublic] = useState(true)
   const [password, setPassword] = useState('')
 
@@ -101,10 +102,22 @@ export default function CreateContestPage() {
           setPenaltyTime(c.penaltyTime)
           setMaxParticipants(c.maxParticipants)
           setMaxTeamSize(c.maxTeamSize)
+          setMinTeamSize(c.minTeamSize || 1)
           setIsPublic(c.isPublic)
 
-          // 加载已有题目
-          if (c.problemCount > 0) {
+          // 加载已有题目：优先从 draftProblems 解析（草稿态），否则从题单加载
+          if (c.draftProblems) {
+            try {
+              const draftItems: { slug: string; score: number }[] = JSON.parse(c.draftProblems)
+              setSelectedProblems(draftItems.map((item) => ({
+                slug: item.slug,
+                title: item.slug,
+                frontendId: '',
+                difficulty: '',
+                score: item.score || 100,
+              })))
+            } catch {}
+          } else if (c.problemCount > 0) {
             try {
               const itemsRes = await getContestProblems(Number(editId))
               if (itemsRes.code === 200) {
@@ -294,6 +307,7 @@ export default function CreateContestPage() {
       penaltyTime,
       maxParticipants,
       maxTeamSize,
+      minTeamSize,
       isPublic,
       password: password || undefined,
       problemSource: 'manual',
@@ -320,17 +334,22 @@ export default function CreateContestPage() {
     setSubmitting(false)
   }
 
-  // 保存并发布
+  // 保存/创建并发布
   const [publishing, setPublishing] = useState(false)
   const handleSaveAndPublish = async () => {
     const params = buildParams()
     if (!params) return
     if (!await confirm('确定保存并发布比赛？发布后将进入报名状态。', { type: 'warning', confirmText: '保存并发布' })) return
+    params.publish = true
     setPublishing(true)
     try {
-      await updateContest(Number(editId), params)
-      await publishContest(Number(editId))
-      navigate(`/contests/${editId}`)
+      if (isEditMode) {
+        await updateContest(Number(editId), params)
+        navigate(`/contests/${editId}`)
+      } else {
+        const res = await createContest(params)
+        if (res.code === 200) navigate(`/contests/${res.data.id}`)
+      }
     } catch (e: any) {
       toast.error(e.message || '发布失败')
     }
@@ -446,6 +465,13 @@ export default function CreateContestPage() {
                   className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
               </div>
             )}
+            {contestType === 'team' && (
+              <div>
+                <label className="block text-xs theme-faint mb-1">每队最少人数</label>
+                <input type="number" value={minTeamSize} onChange={(e) => setMinTeamSize(Number(e.target.value))} min={1} max={maxTeamSize}
+                  className="w-full theme-input rounded-lg px-3 py-1.5 text-sm" />
+              </div>
+            )}
           </div>
           <label className="flex items-center gap-2 text-sm theme-faint">
             <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}
@@ -511,13 +537,11 @@ export default function CreateContestPage() {
         <div className="flex justify-end gap-3">
           <button onClick={() => navigate('/contests')}
             className="px-5 py-2 theme-button-secondary rounded-xl text-sm">取消</button>
-          {isEditMode && (
-            <button onClick={handleSaveAndPublish} disabled={publishing || submitting}
-              className="px-5 py-2 theme-button-success rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2">
-              {publishing && <Loader2 size={14} className="animate-spin" />}
-              保存并发布
-            </button>
-          )}
+          <button onClick={handleSaveAndPublish} disabled={publishing || submitting}
+            className="px-5 py-2 theme-button-success rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2">
+            {publishing && <Loader2 size={14} className="animate-spin" />}
+            {isEditMode ? '保存并发布' : '创建并发布'}
+          </button>
           <button onClick={handleSubmit} disabled={submitting || publishing}
             className="px-5 py-2 theme-button-blue rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2">
             {submitting && <Loader2 size={14} className="animate-spin" />}

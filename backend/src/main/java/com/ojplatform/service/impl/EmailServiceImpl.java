@@ -3,84 +3,75 @@ package com.ojplatform.service.impl;
 import com.ojplatform.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.security.SecureRandom;
+import java.time.Duration;
 
 /**
- * 邮件验证码服务实现
- * 使用 ConcurrentHashMap 存储验证码，5 分钟有效，60 秒防刷
+ * 邮件相关业务实现。
  */
 @Service
 public class EmailServiceImpl implements EmailService {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final Duration CODE_TTL = Duration.ofMinutes(5);
+    private static final Duration SEND_INTERVAL = Duration.ofSeconds(60);
+    private static final String CODE_KEY_PREFIX = "auth:email:code:";
+    private static final String RATE_LIMIT_KEY_PREFIX = "auth:email:send:";
+
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    /** 验证码存储：邮箱 → CodeEntry */
-    private final ConcurrentHashMap<String, CodeEntry> codeMap = new ConcurrentHashMap<>();
-
-    /** 验证码有效期 5 分钟 */
-    private static final long CODE_EXPIRE_MS = 5 * 60 * 1000;
-    /** 发送间隔 60 秒 */
-    private static final long SEND_INTERVAL_MS = 60 * 1000;
-
+/**
+ * 生成验证码并发送到邮箱。
+ */
     @Override
     public void sendVerificationCode(String email) {
-        // 防刷：60 秒内不允许重复发送
-        CodeEntry existing = codeMap.get(email);
-        if (existing != null && System.currentTimeMillis() - existing.createdAt < SEND_INTERVAL_MS) {
+        String codeKey = CODE_KEY_PREFIX + email;
+        String rateLimitKey = RATE_LIMIT_KEY_PREFIX + email;
+
+        Boolean allowed = stringRedisTemplate.opsForValue().setIfAbsent(rateLimitKey, "1", SEND_INTERVAL);
+        if (!Boolean.TRUE.equals(allowed)) {
             throw new RuntimeException("发送太频繁，请 60 秒后再试");
         }
 
-        // 生成 6 位随机验证码
-        String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
+        String code = String.valueOf(100000 + SECURE_RANDOM.nextInt(900000));
 
-        // 存储验证码
-        codeMap.put(email, new CodeEntry(code, System.currentTimeMillis()));
-
-        // 发送邮件
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(email);
-        message.setSubject("【OJ 智能学习平台】验证码");
-        message.setText("您的验证码是：" + code + "\n\n验证码 5 分钟内有效，请勿泄露给他人。");
-        mailSender.send(message);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(email);
+            message.setSubject("【OJ 智能学习平台】验证码");
+            message.setText("您的验证码是：" + code + "\n\n验证码 5 分钟内有效，请勿泄露给他人。");
+            mailSender.send(message);
+            stringRedisTemplate.opsForValue().set(codeKey, code, CODE_TTL);
+        } catch (RuntimeException e) {
+            stringRedisTemplate.delete(rateLimitKey);
+            throw e;
+        }
     }
 
+/**
+ * 校验邮箱验证码是否有效。
+ */
     @Override
     public boolean verifyCode(String email, String code) {
-        CodeEntry entry = codeMap.get(email);
-        if (entry == null) {
+        String codeKey = CODE_KEY_PREFIX + email;
+        String cachedCode = stringRedisTemplate.opsForValue().get(codeKey);
+        if (cachedCode == null || !cachedCode.equals(code)) {
             return false;
         }
-        // 判断是否过期
-        if (System.currentTimeMillis() - entry.createdAt > CODE_EXPIRE_MS) {
-            codeMap.remove(email);
-            return false;
-        }
-        // 判断是否匹配
-        if (!entry.code.equals(code)) {
-            return false;
-        }
-        // 验证成功后删除（一次性使用）
-        codeMap.remove(email);
+        stringRedisTemplate.delete(codeKey);
         return true;
-    }
-
-    /** 验证码条目 */
-    private static class CodeEntry {
-        final String code;
-        final long createdAt;
-
-        CodeEntry(String code, long createdAt) {
-            this.code = code;
-            this.createdAt = createdAt;
-        }
     }
 }

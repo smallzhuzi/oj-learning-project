@@ -4,75 +4,128 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 比赛详情响应 DTO
- * 包含比赛基本信息 + 报名人数 + 当前用户报名状态
+ * 比赛详情数据传输对象。
  */
 public class ContestDetailDTO {
 
-    /** 比赛 ID */
+    /**
+     * 唯一标识。
+     */
     private Long id;
 
-    /** 创建者用户名 */
+    /**
+     * 创建者名称。
+     */
     private String creatorName;
 
-    /** 比赛标题 */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 比赛说明 */
+    /**
+     * 描述。
+     */
     private String description;
 
-    /** 比赛类型 */
+    /**
+     * 比赛类型。
+     */
     private String contestType;
 
-    /** 状态 */
+    /**
+     * 状态。
+     */
     private String status;
 
-    /** 开始时间 */
+    /**
+     * 开始时间。
+     */
     private LocalDateTime startTime;
 
-    /** 结束时间 */
+    /**
+     * 结束时间。
+     */
     private LocalDateTime endTime;
 
-    /** 比赛时长 */
+    /**
+     * 持续时间（分钟）。
+     */
     private Integer durationMinutes;
 
-    /** 封榜时间 */
+    /**
+     * 封榜时长（分钟）。
+     */
     private Integer freezeMinutes;
 
-    /** 计分规则 */
+    /**
+     * 计分规则。
+     */
     private String scoringRule;
 
-    /** 罚时 */
+    /**
+     * 罚时（分钟）。
+     */
     private Integer penaltyTime;
 
-    /** 最大参赛人数 */
+    /**
+     * 最大参赛人数。
+     */
     private Integer maxParticipants;
 
-    /** 最大队伍人数 */
+    /**
+     * 最大队伍人数。
+     */
     private Integer maxTeamSize;
 
-    /** 是否公开 */
+    /**
+     * 最小队伍人数。
+     */
+    private Integer minTeamSize;
+
+    /**
+     * 是否公开。
+     */
     private Boolean isPublic;
 
-    /** OJ 平台 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
 
-    /** 已报名人数 */
+    /**
+     * 已报名人数。
+     */
     private Integer registeredCount;
 
-    /** 队伍数（组队赛） */
+    /**
+     * 队伍数量。
+     */
     private Integer teamCount;
 
-    /** 题目数量 */
+    /**
+     * 题目数量。
+     */
     private Integer problemCount;
 
-    /** 当前用户是否已报名 */
+    /**
+     * 是否已报名。
+     */
     private Boolean registered;
 
-    /** 当前用户是否为创建者 */
+    /**
+     * 当前用户是否为创建者。
+     */
     private Boolean isCreator;
 
-    /** 创建时间 */
+    /**
+     * 草稿题目数据。
+     */
+    private String draftProblems;
+
+    /**
+     * 创建时间。
+     */
     private LocalDateTime createdAt;
 
     // ==================== Getter / Setter ====================
@@ -189,6 +242,14 @@ public class ContestDetailDTO {
         this.maxTeamSize = maxTeamSize;
     }
 
+    public Integer getMinTeamSize() {
+        return minTeamSize;
+    }
+
+    public void setMinTeamSize(Integer minTeamSize) {
+        this.minTeamSize = minTeamSize;
+    }
+
     public Boolean getIsPublic() {
         return isPublic;
     }
@@ -243,6 +304,14 @@ public class ContestDetailDTO {
 
     public void setIsCreator(Boolean isCreator) {
         this.isCreator = isCreator;
+    }
+
+    public String getDraftProblems() {
+        return draftProblems;
+    }
+
+    public void setDraftProblems(String draftProblems) {
+        this.draftProblems = draftProblems;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -1,8 +1,7 @@
 package com.ojplatform.common;
 
 /**
- * LeetCode API 调用专用异常
- * 继承通用 OjApiException，保持向后兼容
+ * 力扣接口异常类型。
  */
 public class LeetCodeApiException extends OjApiException {
 

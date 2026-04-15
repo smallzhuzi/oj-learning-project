@@ -6,62 +6,90 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 题单表实体类
- * 对应数据库表：problem_sets
- * 存储用户或系统组好的一套题目集合
+ * 题单实体类。
  */
 @TableName("problem_sets")
 public class ProblemSet implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 题单唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 创建者用户 ID */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 题单标题 */
+    /**
+     * 标题。
+     */
     private String title;
 
-    /** 题单描述 */
+    /**
+     * 描述。
+     */
     private String description;
 
-    /** 来源类型：manual / quick / dify_smart */
+    /**
+     * 来源类型。
+     */
     private String sourceType;
 
-    /** 整体难度定位：beginner / intermediate / advanced / custom */
+    /**
+     * 难度等级。
+     */
     private String difficultyLevel;
 
-    /** 题目数量 */
+    /**
+     * 题目数量。
+     */
     private Integer problemCount;
 
-    /** 总分 */
+    /**
+     * 总分。
+     */
     private Integer totalScore;
 
-    /** 标签/知识点 JSON 数组 */
+    /**
+     * 标签。
+     */
     @JsonRawValue
     private String tags;
 
-    /** Dify 智能组题时的输入参数快照 */
+    /**
+     * Dify 参数。
+     */
     @JsonRawValue
     private String difyParams;
 
-    /** 可见性：private / public / contest_only */
+    /**
+     * 可见性。
+     */
     private String visibility;
 
-    /** 状态：draft / published / archived */
+    /**
+     * 状态。
+     */
     private String status;
 
-    /** OJ 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform;
 
-    /** 创建时间 */
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    /** 最后更新时间 */
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

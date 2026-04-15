@@ -6,49 +6,69 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 榜单快照表实体类
- * 对应数据库表：contest_standings
- * 存储比赛榜单数据，支持封榜机制和历史回溯
+ * 比赛榜单实体类。
  */
 @TableName("contest_standings")
 public class ContestStanding implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 榜单记录唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 比赛 ID */
+    /**
+     * 比赛ID。
+     */
     private Long contestId;
 
-    /** 用户 ID（个人赛时使用） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 队伍 ID（组队赛时使用） */
+    /**
+     * 队伍ID。
+     */
     private Long teamId;
 
-    /** 排名 */
+    /**
+     * 排名。
+     */
     @TableField("`rank`")
     private Integer rank;
 
-    /** 解题数 */
+    /**
+     * 通过题数。
+     */
     private Integer solvedCount;
 
-    /** 总分（OI 赛制） */
+    /**
+     * 总分。
+     */
     private Integer totalScore;
 
-    /** ACM 罚时（秒） */
+    /**
+     * 总罚时。
+     */
     private Long totalPenalty;
 
-    /** 每题详情 JSON */
+    /**
+     * 题目详情数据。
+     */
     @JsonRawValue
     private String problemDetails;
 
-    /** 是否为封榜时刻的快照 */
+    /**
+     * 是否为封榜快照。
+     */
     private Boolean isFrozen;
 
-    /** 快照时间 */
+    /**
+     * 快照时间。
+     */
     private LocalDateTime snapshotTime;
 
     // ==================== Getter / Setter ====================

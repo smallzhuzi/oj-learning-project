@@ -3,30 +3,41 @@ package com.ojplatform.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * 提交代码请求 DTO
- * 前端提交代码时传入的参数
+ * 提交代码数据传输对象。
  */
 public class SubmitCodeDTO {
 
-    /** 题目 slug（如 two-sum） */
+    /**
+     * 题目标识。
+     */
     @NotBlank(message = "题目 slug 不能为空")
     private String problemSlug;
 
-    /** 编程语言（java / python3 / cpp） */
+    /**
+     * 编程语言。
+     */
     @NotBlank(message = "编程语言不能为空")
     private String language;
 
-    /** 用户代码 */
+    /**
+     * 代码内容。
+     */
     @NotBlank(message = "代码不能为空")
     private String code;
 
-    /** OJ 平台标识（leetcode / luogu） */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
-    /** 当前会话 ID（可选） */
+    /**
+     * 会话ID。
+     */
     private Long sessionId;
 
-    /** 用户 ID（由后端从 JWT Token 中提取并设入） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
     // ==================== Getter / Setter ====================

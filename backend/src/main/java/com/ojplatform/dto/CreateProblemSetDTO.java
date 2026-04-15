@@ -6,36 +6,54 @@ import jakarta.validation.constraints.Min;
 import java.util.List;
 
 /**
- * 创建题单请求 DTO（手动选题）
+ * 创建题单数据传输对象。
  */
 public class CreateProblemSetDTO {
 
-    /** 用户 ID（由后端从 JWT 中提取） */
+    /**
+     * 用户ID。
+     */
     private Long userId;
 
-    /** 题单标题 */
+    /**
+     * 标题。
+     */
     @NotBlank(message = "题单标题不能为空")
     private String title;
 
-    /** 题单描述 */
+    /**
+     * 描述。
+     */
     private String description;
 
-    /** 整体难度定位 */
+    /**
+     * 难度等级。
+     */
     private String difficultyLevel;
 
-    /** OJ 平台标识 */
+    /**
+     * 在线判题平台。
+     */
     private String ojPlatform = "leetcode";
 
-    /** 初始题目列表（题目 slug 数组，可选） */
+    /**
+     * 题目列表。
+     */
     private List<ProblemItem> problems;
 
     /**
-     * 题目项（slug + 分值）
+     * 题目条目数据传输对象。
      */
     public static class ProblemItem {
+        /**
+         * 题目标识。
+         */
         @NotBlank(message = "题目 slug 不能为空")
         private String slug;
 
+        /**
+         * 分数。
+         */
         @Min(value = 1, message = "分值至少为 1")
         private Integer score = 100;
 

@@ -11,39 +11,77 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 统一标签实体类
- * 对应表：tags
+ * 标签实体类。
  */
 @TableName("tags")
 public class Tag implements Serializable {
 
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    /**
+     * 标签类型 ID。
+     */
     private Long tagTypeId;
 
+    /**
+     * 标签Key。
+     */
     private String tagKey;
 
+    /**
+     * 显示名称。
+     */
     private String displayName;
 
+    /**
+     * 别名列表。
+     */
     @JsonRawValue
     private String aliasNames;
 
+    /**
+     * 描述。
+     */
     private String description;
 
+    /**
+     * 颜色。
+     */
     private String color;
 
+    /**
+     * 图标。
+     */
     private String icon;
 
+    /**
+     * 父级ID。
+     */
     private Long parentId;
 
+    /**
+     * 排序值。
+     */
     private Integer sortOrder;
 
+    /**
+     * 状态。
+     */
     private String status;
 
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

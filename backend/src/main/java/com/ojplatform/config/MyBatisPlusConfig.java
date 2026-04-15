@@ -11,8 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalDateTime;
 
 /**
- * MyBatis-Plus 配置类
- * 包含分页插件和自动填充处理器
+ * MyBatis Plus配置类。
  */
 @Configuration
 public class MyBatisPlusConfig {

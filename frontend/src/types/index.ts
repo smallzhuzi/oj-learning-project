@@ -398,6 +398,7 @@ export interface ContestDetail {
   penaltyTime: number
   maxParticipants: number
   maxTeamSize: number
+  minTeamSize: number
   isPublic: boolean
   ojPlatform: string
   registeredCount: number
@@ -405,6 +406,7 @@ export interface ContestDetail {
   problemCount: number
   registered: boolean
   isCreator: boolean
+  draftProblems: string | null
   createdAt: string
 }
 
@@ -418,6 +420,7 @@ export interface CreateContestParams {
   freezeMinutes?: number
   maxParticipants?: number
   maxTeamSize?: number
+  minTeamSize?: number
   scoringRule?: string
   penaltyTime?: number
   allowLanguage?: string[]
@@ -427,6 +430,7 @@ export interface CreateContestParams {
   problemSource?: 'manual' | 'existing_set' | 'auto'
   problemSetId?: number
   problems?: { slug: string; score?: number }[]
+  publish?: boolean
 }
 
 /** 比赛队伍 */
@@ -434,10 +438,52 @@ export interface ContestTeam {
   id: number
   contestId: number
   teamName: string
+  description: string | null
   captainId: number
-  inviteCode: string
   memberCount: number
   createdAt: string
+}
+
+export interface ContestTeamLobby {
+  id: number
+  contestId: number
+  teamName: string
+  description: string | null
+  captainId: number
+  captainName: string
+  memberCount: number
+  memberNames: string[]
+  registered: boolean
+  createdAt: string
+}
+
+export interface ContestTeamMember {
+  userId: number
+  username: string
+  role: 'captain' | 'member'
+  joinedAt: string
+}
+
+export interface ContestTeamDetail extends ContestTeam {
+  captainName: string
+  captain: boolean
+  description: string | null
+  myRole: 'captain' | 'member' | null
+  members: ContestTeamMember[]
+}
+
+export interface MyTeamSummary {
+  contestId: number
+  contestTitle: string
+  contestStatus: string
+  teamId: number
+  teamName: string
+  captainName: string
+  captain: boolean
+  registered: boolean
+  memberCount: number
+  maxTeamSize: number
+  startTime: string
 }
 
 /** 比赛提交 */
@@ -495,4 +541,61 @@ export interface ProblemResult {
   firstAcTimeSeconds: number | null
   score: number
   frozen: boolean
+}
+
+// ==================== 独立队伍类型 ====================
+
+/** 队伍列表项 */
+export interface IndTeamListItem {
+  id: number
+  teamName: string
+  description: string | null
+  captainId: number
+  captainName: string
+  memberCount: number
+  memberNames: string[]
+  createdAt: string
+}
+
+/** 队伍成员信息 */
+export interface IndTeamMember {
+  userId: number
+  username: string
+  role: 'captain' | 'member'
+  joinedAt: string
+}
+
+/** 队伍参赛记录 */
+export interface IndTeamContestRecord {
+  contestId: number
+  contestTitle: string
+  contestStatus: string
+  registrationStatus: string
+  startTime: string
+}
+
+/** 队伍详情 */
+export interface IndTeamDetail {
+  id: number
+  teamName: string
+  description: string | null
+  captainId: number
+  captainName: string
+  memberCount: number
+  createdAt: string
+  captain: boolean
+  myRole: 'captain' | 'member' | null
+  members: IndTeamMember[]
+  contests: IndTeamContestRecord[]
+  pendingRequestCount: number
+}
+
+/** 入队申请 */
+export interface TeamJoinRequestItem {
+  id: number
+  teamId: number
+  userId: number
+  message: string | null
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt: string
 }

@@ -10,28 +10,51 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 标签类型实体类
- * 对应表：tag_types
+ * 标签类型实体类。
  */
 @TableName("tag_types")
 public class TagType implements Serializable {
 
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    /**
+     * 类型Key。
+     */
     private String typeKey;
 
+    /**
+     * 类型Name。
+     */
     private String typeName;
 
+    /**
+     * 描述。
+     */
     private String description;
 
+    /**
+     * 排序值。
+     */
     private Integer sortOrder;
 
+    /**
+     * 状态。
+     */
     private String status;
 
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
+    /**
+     * 更新时间。
+     */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 

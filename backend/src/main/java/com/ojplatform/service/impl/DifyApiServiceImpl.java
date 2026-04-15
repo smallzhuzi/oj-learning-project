@@ -30,8 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Dify Chatflow API 调用服务实现
- * 使用 OkHttp 调用 Dify 的 Chat Messages 接口（streaming 模式）
+ * Dify 接口相关业务实现。
  */
 @Service
 public class DifyApiServiceImpl implements DifyApiService {

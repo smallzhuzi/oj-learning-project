@@ -11,8 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * 管理员权限拦截器
- * 在 JwtInterceptor 之后执行，校验用户是否为管理员
+ * 管理请求拦截器。
  */
 @Component
 public class AdminInterceptor implements HandlerInterceptor {

@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 /**
- * JWT 工具类
- * 负责生成和验证 JSON Web Token
+ * JWT工具类。
  */
 @Component
 public class JwtUtil {

@@ -36,9 +36,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Dify AI 控制器
- * 提供推荐下一题、代码分析、渐进式提示、主动提问四大端点
- * 所有端点均返回 SSE 流：message 事件携带文本片段，done 事件携带完整结果
+ * Dify相关接口控制器。
  */
 @RestController
 @RequestMapping("/api/dify")
@@ -74,10 +72,9 @@ public class DifyController {
     private static final Pattern PROBLEM_SET_BLOCK = Pattern.compile("\\[PROBLEM_SET\\](.*?)\\[/PROBLEM_SET\\]", Pattern.DOTALL);
     private static final Pattern SLUG_IN_LINE = Pattern.compile("^\\d+\\.\\s*([a-z0-9]+(?:-[a-z0-9]+)*)\\s*\\|", Pattern.MULTILINE);
 
-    /**
-     * 推荐下一题（SSE 流式）
-     * POST /api/dify/recommend-next
-     */
+/**
+ * 流式推荐下一道练习题。
+ */
     @PostMapping(value = "/recommend-next", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter recommendNext(@RequestBody DifyChatRequest req) {
         SseEmitter emitter = new SseEmitter(180_000L);
@@ -111,10 +108,9 @@ public class DifyController {
         return emitter;
     }
 
-    /**
-     * 代码分析（SSE 流式）
-     * POST /api/dify/analyze
-     */
+/**
+ * 流式分析本次提交结果。
+ */
     @PostMapping(value = "/analyze", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter analyze(@RequestBody DifyChatRequest req) {
         SseEmitter emitter = new SseEmitter(180_000L);
@@ -147,10 +143,9 @@ public class DifyController {
         return emitter;
     }
 
-    /**
-     * 渐进式提示（SSE 流式）
-     * POST /api/dify/hint
-     */
+/**
+ * 流式生成分步提示。
+ */
     @PostMapping(value = "/hint", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter hint(@RequestBody DifyChatRequest req) {
         SseEmitter emitter = new SseEmitter(180_000L);
@@ -179,10 +174,9 @@ public class DifyController {
         return emitter;
     }
 
-    /**
-     * 主动提问（SSE 流式）
-     * POST /api/dify/chat
-     */
+/**
+ * 提供通用 AI 对话能力。
+ */
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter chat(@RequestBody DifyChatRequest req) {
         SseEmitter emitter = new SseEmitter(180_000L);
@@ -270,23 +264,18 @@ public class DifyController {
         return sb.toString();
     }
 
-    /**
-     * 获取会话的 Dify 历史消息
-     *
-     * GET /api/dify/messages?sessionId=xxx
-     */
+/**
+ * 查询会话消息记录。
+ */
     @GetMapping("/messages")
     public com.ojplatform.common.Result<List<Map<String, Object>>> getMessages(@RequestParam Long sessionId) {
         List<Map<String, Object>> messages = difyApiService.getConversationMessages(sessionId);
         return com.ojplatform.common.Result.ok(messages);
     }
 
-    /**
-     * 智能组题（SSE 流式）
-     * POST /api/dify/smart-generate
-     * 调用 Dify 智能组题应用，根据用户水平和目标推荐题目组合
-     * AI 回复后自动解析 slug 列表并创建题单
-     */
+/**
+ * 根据要求智能生成题单。
+ */
     @PostMapping(value = "/smart-generate", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter smartGenerate(@RequestBody SmartGenerateDTO req, HttpServletRequest httpReq) {
         SseEmitter emitter = new SseEmitter(180_000L);
@@ -344,10 +333,9 @@ public class DifyController {
         return emitter;
     }
 
-    /**
-     * 赛后分析（SSE 流式）
-     * POST /api/dify/contest-analysis
-     */
+/**
+ * 流式生成比赛复盘分析。
+ */
     @PostMapping(value = "/contest-analysis", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter contestAnalysis(@RequestBody Map<String, Object> req, HttpServletRequest httpReq) {
         SseEmitter emitter = new SseEmitter(180_000L);

@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * 代码草稿相关业务实现。
+ */
 @Service
 public class CodeDraftServiceImpl extends ServiceImpl<CodeDraftMapper, CodeDraft> implements CodeDraftService {
 

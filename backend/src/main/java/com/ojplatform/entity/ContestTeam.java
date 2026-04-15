@@ -5,34 +5,47 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 比赛队伍表实体类
- * 对应数据库表：contest_teams
+ * 比赛队伍实体类。
  */
 @TableName("contest_teams")
 public class ContestTeam implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 队伍唯一标识 */
+    /**
+     * 唯一标识。
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 比赛 ID */
+    /**
+     * 比赛ID。
+     */
     private Long contestId;
 
-    /** 队伍名称 */
+    /**
+     * 队伍名称。
+     */
     private String teamName;
 
-    /** 队长用户 ID */
+    /**
+     * 描述。
+     */
+    private String description;
+
+    /**
+     * 队长用户ID。
+     */
     private Long captainId;
 
-    /** 邀请码 */
-    private String inviteCode;
-
-    /** 当前成员数 */
+    /**
+     * 成员数量。
+     */
     private Integer memberCount;
 
-    /** 创建时间 */
+    /**
+     * 创建时间。
+     */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
@@ -62,20 +75,20 @@ public class ContestTeam implements Serializable {
         this.teamName = teamName;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Long getCaptainId() {
         return captainId;
     }
 
     public void setCaptainId(Long captainId) {
         this.captainId = captainId;
-    }
-
-    public String getInviteCode() {
-        return inviteCode;
-    }
-
-    public void setInviteCode(String inviteCode) {
-        this.inviteCode = inviteCode;
     }
 
     public Integer getMemberCount() {
